@@ -1,0 +1,62 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  email     String   @unique
+  username  String   @unique
+  password  String
+  avatar    String?
+  isOnline  Boolean  @default(false)
+  lastSeen  DateTime?
+  createdAt DateTime @default(now())
+
+  memberships ChatMember[]
+  messages    Message[]
+
+  @@index([isOnline])
+}
+
+model Chat {
+  id        String      @id @default(auto()) @map("_id") @db.ObjectId
+  isGroup   Boolean     @default(false)
+  name      String?
+  createdAt DateTime    @default(now())
+
+  members   ChatMember[]
+  messages  Message[]
+}
+
+model ChatMember {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  chatId    String   @db.ObjectId
+  userId    String   @db.ObjectId
+  joinedAt  DateTime @default(now())
+
+  chat      Chat @relation(fields: [chatId], references: [id])
+  user      User @relation(fields: [userId], references: [id])
+
+  @@unique([chatId, userId])
+  @@index([userId])
+  @@index([chatId])
+}
+
+model Message {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  chatId    String   @db.ObjectId
+  senderId  String   @db.ObjectId
+  content   String
+  createdAt DateTime @default(now())
+
+  chat      Chat @relation(fields: [chatId], references: [id])
+  sender    User @relation(fields: [senderId], references: [id])
+
+  @@index([chatId, createdAt])
+  @@index([senderId])
+}
