@@ -10,11 +10,12 @@ export default function Chat({ socket, user, connected }) {
   const [activeChat, setActiveChat] = useState(null);
   const [search, setSearch] = useState("");
 
-  //state for group creation
+  // group creation
   const [showGroupModal, setShowGroupModal] = useState(false);
   const [allUsers, setAllUsers] = useState([]);
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [groupName, setGroupName] = useState("");
+  const [typingUser, setTypingUser] = useState(null);
 
   const bottomRef = useRef(null);
   const navigate = useNavigate();
@@ -37,7 +38,6 @@ export default function Chat({ socket, user, connected }) {
         console.error("Fetch chats error:", err);
       }
     };
-
     fetchChats();
   }, []);
 
@@ -52,7 +52,6 @@ export default function Chat({ socket, user, connected }) {
         console.error("Fetch users error:", err);
       }
     };
-
     fetchUsers();
   }, [showGroupModal, user.id]);
 
@@ -69,10 +68,28 @@ export default function Chat({ socket, user, connected }) {
     return () => socket.off("receive_message", handleReceive);
   }, [socket, activeChat]);
 
+  // Listen typing event 
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleTyping = ({ userId, username, isTyping }) => {
+      if (!activeChat) return;
+      if (userId === user.id) return;
+
+      if (isTyping) {
+        setTypingUser(username);
+      } else {
+        setTypingUser(null);
+      }
+    };
+
+    socket.on("user_typing", handleTyping);
+    return () => socket.off("user_typing", handleTyping);
+  }, [socket, activeChat, user.id]);
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
-
 
   const openChat = async (chat) => {
     try {
@@ -80,6 +97,8 @@ export default function Chat({ socket, user, connected }) {
       const updatedChat = { ...chat, room };
 
       setActiveChat(updatedChat);
+      setTypingUser(null);
+
       socket.emit("join_room", room);
 
       const res = await API.get(`/chats/${chat.id}`);
@@ -107,12 +126,29 @@ export default function Chat({ socket, user, connected }) {
         room: activeChat.room,
       });
 
+      // stop typing
+      socket.emit("typing", {
+        room: activeChat.room,
+        isTyping: false,
+      });
+
       setText("");
     } catch (err) {
       console.error("Send message error:", err);
     }
   };
 
+  // emit typing when user types
+  const handleTypingInput = (e) => {
+    setText(e.target.value);
+
+    if (!activeChat) return;
+
+    socket.emit("typing", {
+      room: activeChat.room,
+      isTyping: true,
+    });
+  };
 
   const createGroup = async () => {
     if (!groupName.trim() || selectedUsers.length === 0) {
@@ -150,7 +186,6 @@ export default function Chat({ socket, user, connected }) {
     navigate("/login");
   };
 
-
   const getOtherMember = (chat) => {
     if (!chat || chat.isGroup) return null;
     return chat.members.find(m => m.user.id !== user.id)?.user;
@@ -177,13 +212,10 @@ export default function Chat({ socket, user, connected }) {
   return (
     <div className="h-screen flex bg-linear-to-br from-slate-100 via-white to-slate-200 text-gray-800 overflow-hidden">
 
-      {/* ================= SIDEBAR ================= */}
+      {/* SIDEBAR */}
       <aside className="w-80 bg-white border-r border-gray-200 flex flex-col shadow-xl">
-
         <div className="p-6 border-b bg-white">
-          <div className="text-2xl font-bold text-indigo-600">
-            ChatApp
-          </div>
+          <div className="text-2xl font-bold text-indigo-600">ChatApp</div>
 
           <div className="text-xs text-gray-500 mt-1">
             Logged in as <span className="font-semibold">{user.username}</span>
@@ -198,11 +230,76 @@ export default function Chat({ socket, user, connected }) {
 
           <button
             onClick={() => setShowGroupModal(true)}
-            className="w-full mt-3 bg-indigo-600 text-white py-2 rounded-xl text-sm font-medium hover:opacity-90 transition shadow"
+            className="w-full mt-3 bg-indigo-600 text-white py-2 rounded-xl text-sm font-medium hover:opacity-90 transition shadow cursor-pointer"
           >
             + Create Group
           </button>
         </div>
+              {/* GROUP MODAL */}
+      {showGroupModal && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white w-[420px] rounded-2xl shadow-2xl p-6">
+
+            <h2 className="text-lg font-semibold text-gray-800 mb-4">
+              Create New Group
+            </h2>
+
+            <input
+              type="text"
+              placeholder="Enter group name"
+              value={groupName}
+              onChange={(e) => setGroupName(e.target.value)}
+              className="w-full px-4 py-2 mb-4 rounded-xl border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none"
+            />
+
+            <div className="max-h-52 overflow-y-auto border border-gray-200 rounded-xl p-3 space-y-2 bg-gray-50">
+              {allUsers.map((u) => (
+                <label
+                  key={u.id}
+                  className="flex items-center gap-3 cursor-pointer text-sm"
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedUsers.includes(u.id)}
+                    onChange={() => {
+                      if (selectedUsers.includes(u.id)) {
+                        setSelectedUsers(
+                          selectedUsers.filter((id) => id !== u.id)
+                        );
+                      } else {
+                        setSelectedUsers([...selectedUsers, u.id]);
+                      }
+                    }}
+                    className="accent-indigo-600"
+                  />
+                  <span>{u.username}</span>
+                </label>
+              ))}
+            </div>
+
+            <div className="flex justify-end gap-3 mt-5">
+              <button
+                onClick={() => {
+                  setShowGroupModal(false);
+                  setGroupName("");
+                  setSelectedUsers([]);
+                }}
+                className="px-4 py-2 rounded-xl border border-gray-300 text-sm hover:bg-gray-100 cursor-pointer"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={createGroup}
+                className="px-5 py-2 rounded-xl bg-indigo-600 text-white text-sm shadow hover:opacity-90 cursor-pointer"
+              >
+                Create Group
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
 
         <div className="flex-1 overflow-y-auto">
           {filteredChats.map((chat) => {
@@ -219,9 +316,7 @@ export default function Chat({ socket, user, connected }) {
                     : "hover:bg-gray-50"}`}
               >
                 <div className="flex justify-between items-start">
-
                   <div className="flex items-center gap-3">
-
                     <div className="relative">
                       <div className="w-11 h-11 rounded-full bg-indigo-500 text-white flex items-center justify-center font-semibold">
                         {getChatName(chat).charAt(0).toUpperCase()}
@@ -237,19 +332,11 @@ export default function Chat({ socket, user, connected }) {
                       <div className="font-semibold text-sm">
                         {getChatName(chat)}
                       </div>
-
                       <div className="text-xs text-gray-500 truncate max-w-40 mt-1">
                         {getLastMessage(chat)}
                       </div>
                     </div>
                   </div>
-
-                  {chat.messages?.[0] && (
-                    <div className="text-[11px] text-gray-400">
-                      {new Date(chat.messages[0].createdAt)
-                        .toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                    </div>
-                  )}
                 </div>
               </div>
             );
@@ -257,7 +344,7 @@ export default function Chat({ socket, user, connected }) {
         </div>
       </aside>
 
-      {/* ================= CHAT AREA ================= */}
+      {/* CHAT AREA */}
       <div className="flex-1 flex flex-col bg-white">
 
         <header className="px-8 py-4 border-b flex justify-between items-center bg-white shadow-sm">
@@ -270,15 +357,19 @@ export default function Chat({ socket, user, connected }) {
 
                 {activeChat.isGroup ? (
                   <div className="text-xs text-indigo-500">
-                    Group chat
+                    {typingUser ? `${typingUser} is typing...` : "Group chat"}
                   </div>
                 ) : (
                   <div className={`text-xs mt-1 ${
-                    getOtherMember(activeChat)?.isOnline
+                    typingUser
+                      ? "text-indigo-500"
+                      : getOtherMember(activeChat)?.isOnline
                       ? "text-green-500"
                       : "text-gray-400"
                   }`}>
-                    {getOtherMember(activeChat)?.isOnline
+                    {typingUser
+                      ? "Typing..."
+                      : getOtherMember(activeChat)?.isOnline
                       ? "Online"
                       : "Offline"}
                   </div>
@@ -291,7 +382,7 @@ export default function Chat({ socket, user, connected }) {
 
           <button
             onClick={handleLogout}
-            className="flex items-center gap-2 px-5 py-2 rounded-xl bg-indigo-600 text-white text-sm shadow hover:opacity-90"
+            className="flex items-center gap-2 px-5 py-2 rounded-xl bg-indigo-600 text-white text-sm shadow hover:opacity-90 cursor-pointer"
           >
             <FiLogOut size={16} />
             Logout
@@ -327,78 +418,19 @@ export default function Chat({ socket, user, connected }) {
           >
             <input
               value={text}
-              onChange={(e) => setText(e.target.value)}
+              onChange={handleTypingInput}
               placeholder="Type a message..."
               className="flex-1 px-5 py-3 rounded-full border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none bg-gray-50"
             />
             <button
               type="submit"
-              className="px-6 py-3 rounded-full bg-indigo-600 text-white shadow hover:opacity-90"
+              className="px-6 py-3 rounded-full bg-indigo-600 text-white shadow hover:opacity-90 cursor-pointer"
             >
               <FiSend size={18} />
             </button>
           </form>
         )}
       </div>
-
-      {/* ================= GROUP MODAL ================= */}
-      {showGroupModal && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-6 w-96 shadow-xl">
-            <h2 className="text-lg font-semibold mb-4">
-              Create Group
-            </h2>
-
-            <input
-              value={groupName}
-              onChange={(e) => setGroupName(e.target.value)}
-              placeholder="Enter group name"
-              className="w-full mb-4 px-4 py-2 border rounded-xl"
-            />
-
-            <div className="max-h-48 overflow-y-auto border rounded-xl p-3 mb-4 space-y-2">
-              {allUsers.map((u) => (
-                <label key={u.id} className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={selectedUsers.includes(u.id)}
-                    onChange={() => {
-                      if (selectedUsers.includes(u.id)) {
-                        setSelectedUsers(
-                          selectedUsers.filter(id => id !== u.id)
-                        );
-                      } else {
-                        setSelectedUsers([...selectedUsers, u.id]);
-                      }
-                    }}
-                  />
-                  <span>{u.username}</span>
-                </label>
-              ))}
-            </div>
-
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => {
-                  setShowGroupModal(false);
-                  setGroupName("");
-                  setSelectedUsers([]);
-                }}
-                className="px-4 py-2 border rounded-xl"
-              >
-                Cancel
-              </button>
-
-              <button
-                onClick={createGroup}
-                className="px-4 py-2 bg-indigo-600 text-white rounded-xl"
-              >
-                Create
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
