@@ -31,7 +31,7 @@ const io = new Server(httpServer, {
 io.on("connection", (socket) => {
   console.log("User connected:", socket.id);
 
-  /* ================= REGISTER USER ================= */
+  // Register User
   socket.on("join_chat", ({ username, userId }) => {
     activeUsers.set(socket.id, { username, userId });
 
@@ -44,13 +44,13 @@ io.on("connection", (socket) => {
     console.log(`${username} joined the chat`);
   });
 
-  /* ================= JOIN ROOM ================= */
+  // Join Room
   socket.on("join_room", (room) => {
     socket.join(room);
     console.log(`User ${socket.id} joined room: ${room}`);
   });
 
-  /* ================= SEND MESSAGE ================= */
+  // Send Message
   socket.on("send_message", ({ senderId, text, timestamp, room }) => {
     const sender = activeUsers.get(socket.id);
 
@@ -72,7 +72,7 @@ io.on("connection", (socket) => {
     }
   });
 
-  /* ================= DISCONNECT ================= */
+  //Disconnect
   socket.on("disconnect", () => {
     const user = activeUsers.get(socket.id);
 
