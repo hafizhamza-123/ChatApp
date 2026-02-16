@@ -71,7 +71,7 @@ io.on("connection", (socket) => {
       io.to(room).emit("receive_message", message);
     }
   });
-  
+
   // Typing Indicator
   socket.on("typing", ({ room, isTyping }) => {
   const user = activeUsers.get(socket.id);
@@ -81,8 +81,8 @@ io.on("connection", (socket) => {
     userId: user.userId,
     username: user.username,
     isTyping,
+    });
   });
-});
 
 
   //Disconnect
