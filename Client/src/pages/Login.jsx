@@ -38,6 +38,7 @@ function Login() {
   };
 
   return (
+    
     <div className="flex justify-center items-center min-h-screen bg-linear-to-br from-indigo-50 via-white to-violet-50 font-inter">
       <div className="bg-white/80 backdrop-blur-xl shadow-lg rounded-2xl p-10 w-full max-w-md border border-gray-200">
         <h2 className="text-3xl font-bold mb-6 text-center text-indigo-600">

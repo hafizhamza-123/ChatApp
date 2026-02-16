@@ -7,7 +7,6 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // 🔐 Validate token on app load
   useEffect(() => {
     const initializeAuth = async () => {
       const token = localStorage.getItem("token");
@@ -19,8 +18,6 @@ export const AuthProvider = ({ children }) => {
 
       try {
         const res = await API.get("/users/profile");
-
-        // ✅ backend returns { success, data }
         setUser(res.data.data);
       } catch (err) {
         console.error("Token validation failed:", err);
@@ -34,7 +31,7 @@ export const AuthProvider = ({ children }) => {
     initializeAuth();
   }, []);
 
-  // 📝 Register
+  // Register
   const register = async (email, username, password) => {
     try {
       const res = await API.post("/users/register", {
@@ -55,12 +52,10 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // 🔑 Login
+  // Login
   const login = async (email, password) => {
     try {
       const res = await API.post("/users/login", { email, password });
-
-      // ✅ correct destructuring
       const { user, token } = res.data.data;
 
       localStorage.setItem("token", token);
@@ -75,7 +70,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // 🚪 Logout (No backend logout route exists)
+  // Logout 
   const logout = () => {
     localStorage.removeItem("token");
     setUser(null);
