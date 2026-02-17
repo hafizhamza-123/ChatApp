@@ -180,13 +180,20 @@ const uploadMessage = async (req, res) => {
       });
     }
 
-    // Detect file type
+    // Detect file type based on MIME type and extension
     let fileType = "file";
+    const mimeType = req.file.mimetype.toLowerCase();
+    const fileName = req.file.originalname.toLowerCase();
+    const ext = fileName.split(".").pop();
 
-    if (req.file.mimetype.startsWith("image")) {
+    if (mimeType.startsWith("image/")) {
       fileType = "image";
-    } else if (req.file.mimetype.startsWith("audio")) {
+    } else if (mimeType.startsWith("audio/") || ["mp3", "wav", "m4a", "aac", "flac", "ogg", "wma"].includes(ext)) {
       fileType = "audio";
+    } else if (mimeType.startsWith("video/") || ["mp4", "avi", "mov", "mkv", "flv", "wmv", "webm"].includes(ext)) {
+      fileType = "video";
+    } else if (["pdf", "doc", "docx", "txt", "xls", "xlsx", "ppt", "pptx"].includes(ext)) {
+      fileType = "document";
     }
 
     const message = await prisma.message.create({

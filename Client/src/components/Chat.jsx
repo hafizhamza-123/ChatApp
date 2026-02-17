@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { FiSend, FiLogOut } from "react-icons/fi";
+import { FiSend, FiLogOut, FiPaperclip, FiX } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import API from "../api/axios";
 
@@ -15,8 +15,13 @@ export default function Chat({ socket, user, connected }) {
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [groupName, setGroupName] = useState("");
   const [typingUser, setTypingUser] = useState(null);
+  
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [uploadingFile, setUploadingFile] = useState(false);
+  const [filePreview, setFilePreview] = useState(null);
 
   const bottomRef = useRef(null);
+  const fileInputRef = useRef(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -108,21 +113,57 @@ export default function Chat({ socket, user, connected }) {
 
   const sendMessage = async (e) => {
     e.preventDefault();
-    if (!text.trim() || !activeChat) return;
+    if ((!text.trim() && !selectedFile) || !activeChat) return;
 
     try {
-      const res = await API.post(
-        `/messages/create/${activeChat.id}`,
-        { content: text }
-      );
+      // If file is selected, upload it
+      if (selectedFile) {
+        setUploadingFile(true);
 
-      const savedMessage = res.data.data;
+        const formData = new FormData();
+        formData.append("file", selectedFile);
 
-      socket.emit("send_message", {
-        senderId: user.id,
-        text: savedMessage.content,
-        room: activeChat.room,
-      });
+        const res = await API.post(
+          `/messages/upload/${activeChat.id}`,
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+
+        const savedMessage = res.data.data;
+
+        socket.emit("send_message", {
+          senderId: user.id,
+          text: savedMessage.fileName,
+          fileUrl: savedMessage.fileUrl,
+          fileType: savedMessage.fileType,
+          fileName: savedMessage.fileName,
+          timestamp: savedMessage.createdAt,
+          room: activeChat.room,
+        });
+
+        setSelectedFile(null);
+        setFilePreview(null);
+        setUploadingFile(false);
+      } else {
+        // Text message
+        const res = await API.post(
+          `/messages/create/${activeChat.id}`,
+          { content: text }
+        );
+
+        const savedMessage = res.data.data;
+
+        socket.emit("send_message", {
+          senderId: user.id,
+          text: savedMessage.content,
+          timestamp: savedMessage.createdAt,
+          room: activeChat.room,
+        });
+      }
 
       // stop typing
       socket.emit("typing", {
@@ -133,6 +174,7 @@ export default function Chat({ socket, user, connected }) {
       setText("");
     } catch (err) {
       console.error("Send message error:", err);
+      setUploadingFile(false);
     }
   };
 
@@ -146,6 +188,40 @@ export default function Chat({ socket, user, connected }) {
       room: activeChat.room,
       isTyping: true,
     });
+  };
+
+  const handleFileSelect = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setSelectedFile(file);
+
+    // Create preview
+    if (file.type.startsWith("image")) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setFilePreview({
+          type: "image",
+          src: event.target.result,
+          name: file.name,
+        });
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setFilePreview({
+        type: "file",
+        name: file.name,
+        size: (file.size / 1024).toFixed(2),
+      });
+    }
+  };
+
+  const removeFilePreview = () => {
+    setSelectedFile(null);
+    setFilePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
   const createGroup = async () => {
@@ -199,6 +275,36 @@ export default function Chat({ socket, user, connected }) {
     if (!chat.messages || chat.messages.length === 0)
       return "No messages yet";
     return chat.messages[0].content || chat.messages[0].text;
+  };
+
+  const getFileExtension = (fileName) => {
+    if (!fileName) return "";
+    return fileName.split(".").pop().toLowerCase();
+  };
+
+  const isVideoFile = (fileName) => {
+    const videoExts = ["mp4", "avi", "mov", "mkv", "flv", "wmv", "webm"];
+    return videoExts.includes(getFileExtension(fileName));
+  };
+
+  const isAudioFile = (fileName) => {
+    const audioExts = ["mp3", "wav", "m4a", "aac", "flac", "ogg", "wma"];
+    return audioExts.includes(getFileExtension(fileName));
+  };
+
+  const isDocumentFile = (fileName) => {
+    const docExts = ["pdf", "doc", "docx", "txt", "xls", "xlsx", "ppt", "pptx"];
+    return docExts.includes(getFileExtension(fileName));
+  };
+
+  const getFileIcon = (fileName) => {
+    const ext = getFileExtension(fileName);
+    if (["doc", "docx"].includes(ext)) return "📄";
+    if (ext === "pdf") return "🔴";
+    if (["xls", "xlsx"].includes(ext)) return "📊";
+    if (["ppt", "pptx"].includes(ext)) return "🎬";
+    if (["zip", "rar", "7z"].includes(ext)) return "📦";
+    return "📎";
   };
 
   const filteredChats = chats.filter(chat =>
@@ -398,14 +504,99 @@ export default function Chat({ socket, user, connected }) {
           {messages.map((msg, index) => (
             <div
               key={index}
-              className={`max-w-lg px-5 py-3 rounded-2xl text-sm shadow ${msg.senderId === user.id
-                  ? "ml-auto bg-indigo-600 text-white rounded-br-none"
-                  : "mr-auto bg-white border border-gray-200 rounded-bl-none"
-                }`}
+              className={`px-3 py-2 rounded-2xl shadow ${
+                msg.senderId === user.id
+                  ? "ml-auto bg-indigo-600 text-white rounded-br-none max-w-xs"
+                  : "mr-auto bg-white border border-gray-200 rounded-bl-none max-w-xs"
+              }`}
             >
-              <div>{msg.text || msg.content}</div>
+              {msg.fileType ? (
+                <div className="space-y-1">
+                  {msg.fileType === "image" ? (
+                    <div className="overflow-hidden rounded-lg">
+                      <img
+                        src={msg.fileUrl || msg.text}
+                        alt="shared"
+                        className="w-full h-auto max-h-64 object-cover"
+                      />
+                    </div>
+                  ) : isVideoFile(msg.fileName) ? (
+                    <div className="overflow-hidden rounded-lg bg-black flex items-center justify-center">
+                      <video
+                        controls
+                        className="w-full max-h-64"
+                        src={msg.fileUrl || msg.text}
+                      />
+                    </div>
+                  ) : isAudioFile(msg.fileName) ? (
+                    <div className="bg-linear-to-r from-purple-500 to-pink-500 p-3 rounded-lg">
+                      <audio
+                        controls
+                        className="w-full h-8"
+                        src={msg.fileUrl || msg.text}
+                      />
+                      <div className="text-xs mt-2 font-medium truncate">
+                        🎵 {msg.fileName || "Audio"}
+                      </div>
+                    </div>
+                  ) : isDocumentFile(msg.fileName) ? (
+                    <a
+                      href={msg.fileUrl || msg.text}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`flex items-center gap-3 p-3 rounded-lg no-underline transition ${
+                        msg.senderId === user.id
+                          ? "bg-indigo-500 hover:bg-indigo-700"
+                          : "bg-gray-100 hover:bg-gray-200"
+                      }`}
+                    >
+                      <span className="text-2xl">{getFileIcon(msg.fileName)}</span>
+                      <div className="min-w-0">
+                        <div className={`text-sm font-semibold truncate ${
+                          msg.senderId === user.id ? "text-white" : "text-gray-800"
+                        }`}>
+                          {msg.fileName}
+                        </div>
+                        <div className={`text-xs ${
+                          msg.senderId === user.id ? "text-indigo-100" : "text-gray-500"
+                        }`}>
+                          Document
+                        </div>
+                      </div>
+                      <span className={`ml-auto ${msg.senderId === user.id ? "text-white" : "text-gray-600"}`}>
+                        ↓
+                      </span>
+                    </a>
+                  ) : (
+                    <a
+                      href={msg.fileUrl || msg.text}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`flex items-center gap-2 p-3 rounded-lg no-underline transition ${
+                        msg.senderId === user.id
+                          ? "bg-indigo-500 hover:bg-indigo-700"
+                          : "bg-gray-100 hover:bg-gray-200"
+                      }`}
+                    >
+                      <span className="text-xl">📎</span>
+                      <div className="min-w-0">
+                        <div className={`text-sm font-medium truncate ${
+                          msg.senderId === user.id ? "text-white" : "text-gray-800"
+                        }`}>
+                          {msg.fileName || "File"}
+                        </div>
+                      </div>
+                      <span className={`ml-auto ${msg.senderId === user.id ? "text-white" : "text-gray-600"}`}>
+                        ↓
+                      </span>
+                    </a>
+                  )}
+                </div>
+              ) : (
+                <div className="px-2 py-1 text-sm">{msg.text || msg.content}</div>
+              )}
 
-              <div className="text-[10px] mt-2 opacity-70 text-right">
+              <div className={`text-[10px] mt-1 px-2 ${msg.senderId === user.id ? "text-indigo-100" : "text-gray-500"}`}>
                 {new Date(
                   msg.createdAt || msg.timestamp
                 ).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
@@ -416,23 +607,95 @@ export default function Chat({ socket, user, connected }) {
         </main>
 
         {activeChat && (
-          <form
-            onSubmit={sendMessage}
-            className="px-8 py-4 bg-white border-t flex gap-3"
-          >
-            <input
-              value={text}
-              onChange={handleTypingInput}
-              placeholder="Type a message..."
-              className="flex-1 px-5 py-3 rounded-full border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none bg-gray-50"
-            />
-            <button
-              type="submit"
-              className="px-6 py-3 rounded-full bg-indigo-600 text-white shadow hover:opacity-90 cursor-pointer"
+          <div className="px-8 py-4 bg-white border-t">
+            {/* File Preview */}
+            {filePreview && (
+              <div className="mb-3 p-3 bg-indigo-50 rounded-xl border border-indigo-200 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  {filePreview.type === "image" ? (
+                    <>
+                      <img
+                        src={filePreview.src}
+                        alt="preview"
+                        className="w-12 h-12 rounded object-cover"
+                      />
+                      <div className="text-sm">
+                        <div className="font-medium text-gray-800">
+                          {filePreview.name}
+                        </div>
+                        <div className="text-xs text-gray-500">Image</div>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="w-12 h-12 bg-indigo-200 rounded flex items-center justify-center text-lg">
+                        📄
+                      </div>
+                      <div className="text-sm">
+                        <div className="font-medium text-gray-800">
+                          {filePreview.name}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {filePreview.size} KB
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+                <button
+                  onClick={removeFilePreview}
+                  className="p-2 hover:bg-indigo-100 rounded-lg cursor-pointer"
+                >
+                  <FiX size={18} className="text-indigo-600" />
+                </button>
+              </div>
+            )}
+
+            {/* Input Section */}
+            <form
+              onSubmit={sendMessage}
+              className="flex gap-3 items-end"
             >
-              <FiSend size={18} />
-            </button>
-          </form>
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileSelect}
+                accept="image/*,.pdf,.doc,.docx,audio/*,video/*"
+                className="hidden"
+              />
+
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploadingFile}
+                className="p-3 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 transition cursor-pointer disabled:opacity-50"
+              >
+                <FiPaperclip size={20} />
+              </button>
+
+              <input
+                value={text}
+                onChange={handleTypingInput}
+                placeholder="Type a message..."
+                className="flex-1 px-5 py-3 rounded-full border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none bg-gray-50"
+              />
+
+              <button
+                type="submit"
+                disabled={uploadingFile || (!text.trim() && !selectedFile)}
+                className="px-6 py-3 rounded-full bg-indigo-600 text-white shadow hover:opacity-90 transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                {uploadingFile ? (
+                  <>
+                    <span className="inline-block animate-spin">⏳</span>
+                    Uploading...
+                  </>
+                ) : (
+                  <FiSend size={18} />
+                )}
+              </button>
+            </form>
+          </div>
         )}
       </div>
     </div>

@@ -51,7 +51,7 @@ io.on("connection", (socket) => {
   });
 
   // Send Message
-  socket.on("send_message", ({ senderId, text, timestamp, room }) => {
+  socket.on("send_message", ({ senderId, text, timestamp, room, fileUrl, fileType, fileName }) => {
     const sender = activeUsers.get(socket.id);
 
     if (!sender) {
@@ -66,6 +66,11 @@ io.on("connection", (socket) => {
       timestamp: timestamp || new Date().toISOString(),
       room,
     };
+
+    // Add file metadata if present
+    if (fileUrl) message.fileUrl = fileUrl;
+    if (fileType) message.fileType = fileType;
+    if (fileName) message.fileName = fileName;
 
     if (room) {
       io.to(room).emit("receive_message", message);
