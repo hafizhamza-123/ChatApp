@@ -2,9 +2,11 @@ import { Router } from "express";
 import {
   getAllMessages,
   createMessage,
-  getUnreadCount
+  getUnreadCount, 
+  uploadMessage
 } from "../controllers/message.controller.js";
 import { authenticate } from "../middlewares/authMiddleware.js";
+import upload from "../middlewares/upload.js";
 
 const router = Router();
 
@@ -17,7 +19,10 @@ router.get("/:chatId", getAllMessages);
 // Create a new message in a chat
 router.post("/create/:chatId", createMessage);
 
-// Get unread message count (basic version)
+// Upload file message
+router.post("/upload/:chatId", upload.single("file"), uploadMessage);
+
+// Get unread message count 
 router.get("/:chatId/unread-count", getUnreadCount);
 
 export default router;

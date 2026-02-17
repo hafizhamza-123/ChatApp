@@ -153,8 +153,81 @@ const getUnreadCount = async (req, res) => {
   }
 };
 
+// Upload Message (Image / File / Audio)
+const uploadMessage = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { chatId } = req.params;
+
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "No file uploaded"
+      });
+    }
+
+    const isMember = await prisma.chatMember.findFirst({
+      where: {
+        chatId,
+        userId
+      }
+    });
+
+    if (!isMember) {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied"
+      });
+    }
+
+    // Detect file type
+    let fileType = "file";
+
+    if (req.file.mimetype.startsWith("image")) {
+      fileType = "image";
+    } else if (req.file.mimetype.startsWith("audio")) {
+      fileType = "audio";
+    }
+
+    const message = await prisma.message.create({
+      data: {
+        chatId,
+        senderId: userId,
+        fileUrl: req.file.path,        // Cloudinary secure_url
+        publicId: req.file.filename,   // Cloudinary public_id
+        fileName: req.file.originalname,
+        fileType
+      },
+      include: {
+        sender: {
+          select: {
+            id: true,
+            username: true,
+            avatar: true
+          }
+        }
+      }
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: "File uploaded successfully",
+      data: message
+    });
+
+  } catch (error) {
+    console.error("Upload message error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error"
+    });
+  }
+};
+
+
 export {
   getAllMessages,
   createMessage,
-  getUnreadCount
+  getUnreadCount,
+  uploadMessage
 };
