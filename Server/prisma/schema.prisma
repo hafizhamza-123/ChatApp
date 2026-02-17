@@ -39,7 +39,7 @@ model ChatMember {
   userId    String   @db.ObjectId
   joinedAt  DateTime @default(now())
 
-  chat      Chat @relation(fields: [chatId], references: [id])
+  chat      Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
   user      User @relation(fields: [userId], references: [id])
 
   @@unique([chatId, userId])
@@ -54,7 +54,7 @@ model Message {
   content   String
   createdAt DateTime @default(now())
 
-  chat      Chat @relation(fields: [chatId], references: [id])
+  chat      Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
   sender    User @relation(fields: [senderId], references: [id])
 
   @@index([chatId, createdAt])

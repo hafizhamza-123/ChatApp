@@ -282,9 +282,52 @@ const getChatById = async (req, res) => {
   }
 };
 
+// Delete chat 
+const deleteChat = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { chatId } = req.params;
+
+    // Check if user is member of chat
+    const chat = await prisma.chat.findFirst({
+      where: {
+        id: chatId,
+        members: {
+          some: { userId }
+        }
+      }
+    });
+
+    if (!chat) {
+      return res.status(403).json({
+        success: false,
+        message: "Chat not found or access denied"
+      });
+    }
+
+    // Delete chat
+    await prisma.chat.delete({
+      where: { id: chatId }
+    });
+
+    return res.json({
+      success: true,
+      message: "Chat deleted successfully"
+    });
+
+  } catch (error) {
+    console.error("Delete chat error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error"
+    });
+  }
+};
+
 export {
   createDirectChat,
   createGroupChat,
   fetchUserChats,
-  getChatById
+  getChatById,
+  deleteChat
 };

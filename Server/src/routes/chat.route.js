@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createDirectChat, createGroupChat, fetchUserChats, getChatById } from '../controllers/chat.controller.js';
+import { createDirectChat, createGroupChat, fetchUserChats, getChatById, deleteChat } from '../controllers/chat.controller.js';
 import { authenticate } from "../middlewares/authMiddleware.js";
 
 const router = Router();
@@ -18,5 +18,8 @@ router.get('/', fetchUserChats);
 
 // Get specific chat
 router.get('/:chatId', getChatById);
+
+// Delete Chat
+router.delete('/:chatId', deleteChat);
 
 export default router;

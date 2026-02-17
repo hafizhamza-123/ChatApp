@@ -9,14 +9,11 @@ export default function Chat({ socket, user, connected }) {
   const [text, setText] = useState("");
   const [activeChat, setActiveChat] = useState(null);
   const [search, setSearch] = useState("");
-
-  // group creation
   const [showGroupModal, setShowGroupModal] = useState(false);
+
   const [allUsers, setAllUsers] = useState([]);
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [groupName, setGroupName] = useState("");
-
-  // typing indicator
   const [typingUser, setTypingUser] = useState(null);
 
   const bottomRef = useRef(null);
@@ -69,8 +66,7 @@ export default function Chat({ socket, user, connected }) {
     socket.on("receive_message", handleReceive);
     return () => socket.off("receive_message", handleReceive);
   }, [socket, activeChat]);
-
-  // Listen typing event 
+ 
   useEffect(() => {
     if (!socket) return;
 
