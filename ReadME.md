@@ -412,30 +412,6 @@ The application uses three main models via Prisma ORM:
 
 See `Server/prisma/schema.prisma` for complete schema definition.
 
-## 🚀 Roadmap & Future Enhancements
-
-### Phase 2 Features
-- [ ] User profile avatars with upload
-- [ ] Message reactions and emojis
-- [ ] Message search functionality
-- [ ] Read receipts and delivery status
-- [ ] Voice and video calling
-- [ ] Message forwarding and replies
-- [ ] User blocking and muting
-- [ ] Dark mode UI
-
-### Phase 3 Features
-- [ ] Push notifications
-- [ ] Desktop and mobile apps (Electron, React Native)
-- [ ] Message encryption (end-to-end)
-- [ ] Scheduled messages
-- [ ] Message editing and deletion
-- [ ] Admin controls for group chats
-- [ ] User role management
-- [ ] Analytics and usage stats
-
-## 🤝 Contributing
-
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
 3. Commit changes (`git commit -m 'Add amazing feature'`)
@@ -471,10 +447,5 @@ lsof -ti:3001 | xargs kill -9
 - Check browser console for CORS errors
 - Verify `VITE_SOCKET_URL` matches server address
 
-## 📞 Support
-
-For issues and feature requests, please open an issue on GitHub.
-
----
 
 **Built with ❤️ using React + Node.js**
