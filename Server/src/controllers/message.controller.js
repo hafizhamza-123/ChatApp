@@ -200,8 +200,8 @@ const uploadMessage = async (req, res) => {
       data: {
         chatId,
         senderId: userId,
-        fileUrl: req.file.path,        // Cloudinary secure_url
-        publicId: req.file.filename,   // Cloudinary public_id
+        fileUrl: req.file.path,       
+        publicId: req.file.filename,   
         fileName: req.file.originalname,
         fileType
       },
