@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { FiSend, FiLogOut, FiPaperclip, FiX } from "react-icons/fi";
+import { FiSend, FiLogOut, FiPaperclip, FiX, FiFile, FiMessageCircle, FiUsers, FiLoader, FiMoreVertical } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import API from "../api/axios";
 
@@ -19,6 +19,8 @@ export default function Chat({ socket, user, connected }) {
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploadingFile, setUploadingFile] = useState(false);
   const [filePreview, setFilePreview] = useState(null);
+  const [hoveredChatId, setHoveredChatId] = useState(null);
+  const [menuOpenChatId, setMenuOpenChatId] = useState(null);
 
   const bottomRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -307,6 +309,26 @@ export default function Chat({ socket, user, connected }) {
     return "📎";
   };
 
+  // Delete chat handler (calls backend)
+  const deleteChat = async (chatId) => {
+    try {
+      const confirmDelete = window.confirm("Are you sure you want to delete this chat?");
+      if (!confirmDelete) return;
+
+      await API.delete(`/chats/${chatId}`);
+
+      setChats((prev) => prev.filter((c) => c.id !== chatId));
+
+      if (activeChat?.id === chatId) {
+        setActiveChat(null);
+        setMessages([]);
+      }
+    } catch (err) {
+      console.error("Delete chat error:", err);
+      alert(err.response?.data?.message || "Failed to delete chat");
+    }
+  };
+
   const filteredChats = chats.filter(chat =>
     getChatName(chat)
       .toLowerCase()
@@ -413,22 +435,19 @@ export default function Chat({ socket, user, connected }) {
             return (
               <div
                 key={chat.id}
-                onClick={() => openChat(chat)}
-                className={`px-5 py-4 cursor-pointer border-b border-gray-100 transition-all
-                  ${activeChat?.id === chat.id
-                    ? "bg-indigo-50"
-                    : "hover:bg-gray-50"}`}
+                onMouseEnter={() => setHoveredChatId(chat.id)}
+                onMouseLeave={() => { setHoveredChatId(null); setMenuOpenChatId(null); }}
+                className={`px-5 py-4 border-b border-gray-100 transition-all relative ${activeChat?.id === chat.id ? "bg-indigo-50" : "hover:bg-gray-50"}`}
               >
                 <div className="flex justify-between items-start">
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 cursor-pointer" onClick={() => openChat(chat)}>
                     <div className="relative">
                       <div className="w-11 h-11 rounded-full bg-indigo-500 text-white flex items-center justify-center font-semibold">
                         {getChatName(chat).charAt(0).toUpperCase()}
                       </div>
 
                       {!chat.isGroup && (
-                        <span className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white
-                          ${isOnline ? "bg-green-500" : "bg-gray-400"}`} />
+                        <span className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${isOnline ? "bg-green-500" : "bg-gray-400"}`} />
                       )}
                     </div>
 
@@ -440,6 +459,26 @@ export default function Chat({ socket, user, connected }) {
                         {getLastMessage(chat)}
                       </div>
                     </div>
+                  </div>
+
+                  <div className="relative">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setMenuOpenChatId(menuOpenChatId === chat.id ? null : chat.id); }}
+                      className={`p-2 rounded-full hover:bg-gray-100 transition ${hoveredChatId === chat.id || menuOpenChatId === chat.id ? 'visible' : 'invisible'}`}
+                    >
+                      <FiMoreVertical size={16} />
+                    </button>
+
+                    {menuOpenChatId === chat.id && (
+                      <div className="absolute right-0 mt-2 w-40 bg-white border rounded shadow z-50">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); deleteChat(chat.id); setMenuOpenChatId(null); }}
+                          className="w-full text-left px-3 py-2 hover:bg-red-50 text-red-600"
+                        >
+                          Delete Chat
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -479,7 +518,7 @@ export default function Chat({ socket, user, connected }) {
                 )}
               </>
             ) : (
-              <div className="text-gray-400">Select a chat</div>
+              <div className="text-indigo-600 font-bold">Select a chat</div>
             )}
           </div>
 
@@ -492,8 +531,10 @@ export default function Chat({ socket, user, connected }) {
           </button>
         </header>
 
-        <main className="flex-1 overflow-y-auto px-10 py-6 space-y-4 
-  bg-linear-to-br from-indigo-50 via-white to-purple-50 relative">
+        <main className={`flex-1 overflow-y-auto px-10 py-6 space-y-4 
+  bg-linear-to-br from-indigo-50 via-white to-purple-50 relative ${
+    activeChat ? "" : "flex items-center justify-center"
+  }`}>
 
           <div className="absolute -top-20 -left-20 w-72 h-72 
   bg-indigo-400 rounded-full blur-3xl opacity-20" />
@@ -501,109 +542,185 @@ export default function Chat({ socket, user, connected }) {
           <div className="absolute bottom-0 right-0 w-72 h-72 
   bg-purple-400 rounded-full blur-3xl opacity-20" />
 
-          {messages.map((msg, index) => (
-            <div
-              key={index}
-              className={`px-3 py-2 rounded-2xl shadow ${
-                msg.senderId === user.id
-                  ? "ml-auto bg-indigo-600 text-white rounded-br-none max-w-xs"
-                  : "mr-auto bg-white border border-gray-200 rounded-bl-none max-w-xs"
-              }`}
-            >
-              {msg.fileType ? (
-                <div className="space-y-1">
-                  {msg.fileType === "image" ? (
-                    <div className="overflow-hidden rounded-lg">
-                      <img
-                        src={msg.fileUrl || msg.text}
-                        alt="shared"
-                        className="w-full h-auto max-h-64 object-cover"
-                      />
-                    </div>
-                  ) : isVideoFile(msg.fileName) ? (
-                    <div className="overflow-hidden rounded-lg bg-black flex items-center justify-center">
-                      <video
-                        controls
-                        className="w-full max-h-64"
-                        src={msg.fileUrl || msg.text}
-                      />
-                    </div>
-                  ) : isAudioFile(msg.fileName) ? (
-                    <div className="bg-linear-to-r from-purple-500 to-pink-500 p-3 rounded-lg">
-                      <audio
-                        controls
-                        className="w-full h-8"
-                        src={msg.fileUrl || msg.text}
-                      />
-                      <div className="text-xs mt-2 font-medium truncate">
-                        🎵 {msg.fileName || "Audio"}
-                      </div>
-                    </div>
-                  ) : isDocumentFile(msg.fileName) ? (
-                    <a
-                      href={msg.fileUrl || msg.text}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={`flex items-center gap-3 p-3 rounded-lg no-underline transition ${
-                        msg.senderId === user.id
-                          ? "bg-indigo-500 hover:bg-indigo-700"
-                          : "bg-gray-100 hover:bg-gray-200"
-                      }`}
-                    >
-                      <span className="text-2xl">{getFileIcon(msg.fileName)}</span>
-                      <div className="min-w-0">
-                        <div className={`text-sm font-semibold truncate ${
-                          msg.senderId === user.id ? "text-white" : "text-gray-800"
-                        }`}>
-                          {msg.fileName}
+          {activeChat ? (
+            <>
+              {messages.map((msg, index) => (
+                <div
+                  key={index}
+                  className={`px-3 py-2 rounded-2xl shadow ${
+                    msg.senderId === user.id
+                      ? "ml-auto bg-indigo-600 text-white rounded-br-none max-w-xs"
+                      : "mr-auto bg-white border border-gray-200 rounded-bl-none max-w-xs"
+                  }`}
+                >
+                  {msg.fileType ? (
+                    <div className="space-y-1">
+                      {msg.fileType === "image" ? (
+                        <div className="overflow-hidden rounded-lg">
+                          <img
+                            src={msg.fileUrl || msg.text}
+                            alt="shared"
+                            className="w-full h-auto max-h-64 object-cover"
+                          />
                         </div>
-                        <div className={`text-xs ${
-                          msg.senderId === user.id ? "text-indigo-100" : "text-gray-500"
-                        }`}>
-                          Document
+                      ) : isVideoFile(msg.fileName) ? (
+                        <div className="overflow-hidden rounded-lg bg-black flex items-center justify-center">
+                          <video
+                            controls
+                            className="w-full max-h-64"
+                            src={msg.fileUrl || msg.text}
+                          />
                         </div>
-                      </div>
-                      <span className={`ml-auto ${msg.senderId === user.id ? "text-white" : "text-gray-600"}`}>
-                        ↓
-                      </span>
-                    </a>
+                      ) : isAudioFile(msg.fileName) ? (
+                        <div className="bg-linear-to-r from-purple-500 to-pink-500 p-3 rounded-lg">
+                          <audio
+                            controls
+                            className="w-full h-8"
+                            src={msg.fileUrl || msg.text}
+                          />
+                          <div className="text-xs mt-2 font-medium truncate">
+                            🎵 {msg.fileName || "Audio"}
+                          </div>
+                        </div>
+                      ) : isDocumentFile(msg.fileName) ? (
+                        <a
+                          href={msg.fileUrl || msg.text}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={`flex items-center gap-3 p-3 rounded-lg no-underline transition ${
+                            msg.senderId === user.id
+                              ? "bg-indigo-500 hover:bg-indigo-700"
+                              : "bg-gray-100 hover:bg-gray-200"
+                          }`}
+                        >
+                          <span className="text-2xl">{getFileIcon(msg.fileName)}</span>
+                          <div className="min-w-0">
+                            <div className={`text-sm font-semibold truncate ${
+                              msg.senderId === user.id ? "text-white" : "text-gray-800"
+                            }`}>
+                              {msg.fileName}
+                            </div>
+                            <div className={`text-xs ${
+                              msg.senderId === user.id ? "text-indigo-100" : "text-gray-500"
+                            }`}>
+                              Document
+                            </div>
+                          </div>
+                          <span className={`ml-auto ${msg.senderId === user.id ? "text-white" : "text-gray-600"}`}>
+                            ↓
+                          </span>
+                        </a>
+                      ) : (
+                        <a
+                          href={msg.fileUrl || msg.text}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={`flex items-center gap-2 p-3 rounded-lg no-underline transition ${
+                            msg.senderId === user.id
+                              ? "bg-indigo-500 hover:bg-indigo-700"
+                              : "bg-gray-100 hover:bg-gray-200"
+                          }`}
+                        >
+                          <span className="text-xl">📎</span>
+                          <div className="min-w-0">
+                            <div className={`text-sm font-medium truncate ${
+                              msg.senderId === user.id ? "text-white" : "text-gray-800"
+                            }`}>
+                              {msg.fileName || "File"}
+                            </div>
+                          </div>
+                          <span className={`ml-auto ${msg.senderId === user.id ? "text-white" : "text-gray-600"}`}>
+                            ↓
+                          </span>
+                        </a>
+                      )}
+                    </div>
                   ) : (
-                    <a
-                      href={msg.fileUrl || msg.text}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={`flex items-center gap-2 p-3 rounded-lg no-underline transition ${
-                        msg.senderId === user.id
-                          ? "bg-indigo-500 hover:bg-indigo-700"
-                          : "bg-gray-100 hover:bg-gray-200"
-                      }`}
-                    >
-                      <span className="text-xl">📎</span>
-                      <div className="min-w-0">
-                        <div className={`text-sm font-medium truncate ${
-                          msg.senderId === user.id ? "text-white" : "text-gray-800"
-                        }`}>
-                          {msg.fileName || "File"}
-                        </div>
-                      </div>
-                      <span className={`ml-auto ${msg.senderId === user.id ? "text-white" : "text-gray-600"}`}>
-                        ↓
-                      </span>
-                    </a>
+                    <div className="px-2 py-1 text-sm">{msg.text || msg.content}</div>
                   )}
-                </div>
-              ) : (
-                <div className="px-2 py-1 text-sm">{msg.text || msg.content}</div>
-              )}
 
-              <div className={`text-[10px] mt-1 px-2 ${msg.senderId === user.id ? "text-indigo-100" : "text-gray-500"}`}>
-                {new Date(
-                  msg.createdAt || msg.timestamp
-                ).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                  <div className={`text-[10px] mt-1 px-2 ${msg.senderId === user.id ? "text-indigo-100" : "text-gray-500"}`}>
+                    {new Date(
+                      msg.createdAt || msg.timestamp
+                    ).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                  </div>
+                </div>
+              ))}
+              <div ref={bottomRef} />
+            </>
+          ) : (
+            <div className="relative w-full max-w-2xl text-center">
+              {/* Animated Icons */}
+              <style>{`
+                @keyframes float {
+                  0%, 100% { transform: translateY(0px); }
+                  50% { transform: translateY(-20px); }
+                }
+                @keyframes bounce-in {
+                  0% { opacity: 0; transform: scale(0.5); }
+                  100% { opacity: 1; transform: scale(1); }
+                }
+                @keyframes slide-up {
+                  0% { opacity: 0; transform: translateY(30px); }
+                  100% { opacity: 1; transform: translateY(0); }
+                }
+                .animate-float {
+                  animation: float 3s ease-in-out infinite;
+                }
+                .animate-bounce-in {
+                  animation: bounce-in 0.6s ease-out;
+                }
+                .animate-slide-up {
+                  animation: slide-up 0.8s ease-out;
+                }
+              `}</style>
+
+              {/* Main Icon */}
+
+              {/* Welcome Text */}
+              <div className="animate-slide-up" style={{ animationDelay: "0.1s" }}>
+                <h1 className="text-4xl md:text-5xl font-bold bg-linear-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-3">
+                  Welcome to ChatApp
+                </h1>
+              </div>
+
+              <div className="animate-slide-up mb-8" style={{ animationDelay: "0.2s" }}>
+                <p className="text-lg md:text-xl text-gray-600 mb-2">
+                  Hey <span className="font-semibold text-indigo-600">{user?.username}!</span> 👋
+                </p>
+                <p className="text-gray-500">
+                  Start a conversation to connect with others
+                </p>
+              </div>
+
+              {/* Feature Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 animate-slide-up" style={{ animationDelay: "0.3s" }}>
+                <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-200 hover:border-indigo-300 hover:shadow-lg transition">
+                  <div className="text-3xl mb-3 flex justify-center"><FiMessageCircle className="text-indigo-500" /></div>
+                  <h3 className="font-semibold text-gray-800 mb-2">Instant Messaging</h3>
+                  <p className="text-sm text-gray-600">Send messages in real-time</p>
+                </div>
+
+                <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-200 hover:border-indigo-300 hover:shadow-lg transition">
+                  <div className="text-3xl mb-3 flex justify-center"><FiUsers className="text-indigo-500" /></div>
+                  <h3 className="font-semibold text-gray-800 mb-2">Group Chats</h3>
+                  <p className="text-sm text-gray-600">Chat with multiple friends</p>
+                </div>
+
+                <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-200 hover:border-indigo-300 hover:shadow-lg transition">
+                  <div className="text-3xl mb-3 flex justify-center"><FiFile className="text-indigo-500" /></div>
+                  <h3 className="font-semibold text-gray-800 mb-2">File Sharing</h3>
+                  <p className="text-sm text-gray-600">Share media and documents</p>
+                </div>
+              </div>
+
+              {/* CTA */}
+              <div className="animate-slide-up" style={{ animationDelay: "0.4s" }}>
+                <p className="text-gray-600 mb-1">Select a chat from the sidebar</p>
+                <p className="text-sm text-gray-500">or create a new group to get started</p>
               </div>
             </div>
-          ))}
-          <div ref={bottomRef} />
+          )}
         </main>
 
         {activeChat && (
@@ -687,7 +804,7 @@ export default function Chat({ socket, user, connected }) {
               >
                 {uploadingFile ? (
                   <>
-                    <span className="inline-block animate-spin">⏳</span>
+                    <FiLoader className="animate-spin" size={18} />
                     Uploading...
                   </>
                 ) : (

@@ -10,11 +10,7 @@ const storage = new CloudinaryStorage({
     return {
       folder: "ChatApp",
       resource_type: resourceType,
-      allowed_formats: [
-        "jpg", "png", "jpeg",
-        "pdf", "doc", "docx",
-        "mp3", "wav", "m4a", "mp4"
-      ]
+      
     };
   }
 });
