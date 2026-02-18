@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { FiSend, FiLogOut, FiPaperclip, FiX, FiFile, FiMessageCircle, FiUsers, FiLoader, FiMoreVertical } from "react-icons/fi";
+import { FiSend, FiLogOut, FiPaperclip, FiX, FiFile, FiMessageCircle, FiUsers, FiLoader, FiMoreVertical, FiTrash2,} from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import API from "../api/axios";
 
@@ -15,7 +15,7 @@ export default function Chat({ socket, user, connected }) {
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [groupName, setGroupName] = useState("");
   const [typingUser, setTypingUser] = useState(null);
-  
+
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploadingFile, setUploadingFile] = useState(false);
   const [filePreview, setFilePreview] = useState(null);
@@ -73,7 +73,7 @@ export default function Chat({ socket, user, connected }) {
     socket.on("receive_message", handleReceive);
     return () => socket.off("receive_message", handleReceive);
   }, [socket, activeChat]);
- 
+
   useEffect(() => {
     if (!socket) return;
 
@@ -118,7 +118,6 @@ export default function Chat({ socket, user, connected }) {
     if ((!text.trim() && !selectedFile) || !activeChat) return;
 
     try {
-      // If file is selected, upload it
       if (selectedFile) {
         setUploadingFile(true);
 
@@ -151,7 +150,6 @@ export default function Chat({ socket, user, connected }) {
         setFilePreview(null);
         setUploadingFile(false);
       } else {
-        // Text message
         const res = await API.post(
           `/messages/create/${activeChat.id}`,
           { content: text }
@@ -464,7 +462,7 @@ export default function Chat({ socket, user, connected }) {
                   <div className="relative">
                     <button
                       onClick={(e) => { e.stopPropagation(); setMenuOpenChatId(menuOpenChatId === chat.id ? null : chat.id); }}
-                      className={`p-2 rounded-full hover:bg-gray-100 transition ${hoveredChatId === chat.id || menuOpenChatId === chat.id ? 'visible' : 'invisible'}`}
+                      className={`p-2 rounded-full hover:bg-gray-100 transition cursor-pointer ${hoveredChatId === chat.id || menuOpenChatId === chat.id ? 'visible' : 'invisible'}`}
                     >
                       <FiMoreVertical size={16} />
                     </button>
@@ -472,11 +470,30 @@ export default function Chat({ socket, user, connected }) {
                     {menuOpenChatId === chat.id && (
                       <div className="absolute right-0 mt-2 w-40 bg-white border rounded shadow z-50">
                         <button
-                          onClick={(e) => { e.stopPropagation(); deleteChat(chat.id); setMenuOpenChatId(null); }}
-                          className="w-full text-left px-3 py-2 hover:bg-red-50 text-red-600"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deleteChat(chat.id);
+                            setMenuOpenChatId(null);
+                          }}
+                          className="
+    group
+    flex items-center gap-2
+    w-full text-left
+    px-3 py-2 rounded-lg
+    text-sm font-medium
+    text-red-600
+    hover:bg-red-50
+    transition-all duration-200
+    active:scale-[0.98] cursor-pointer
+  "
                         >
+                          <FiTrash2
+                            size={16}
+                            className="transition-transform duration-200 group-hover:scale-110"
+                          />
                           Delete Chat
                         </button>
+
                       </div>
                     )}
                   </div>
@@ -504,10 +521,10 @@ export default function Chat({ socket, user, connected }) {
                   </div>
                 ) : (
                   <div className={`text-xs mt-1 ${typingUser
-                      ? "text-indigo-500"
-                      : getOtherMember(activeChat)?.isOnline
-                        ? "text-green-500"
-                        : "text-gray-400"
+                    ? "text-indigo-500"
+                    : getOtherMember(activeChat)?.isOnline
+                      ? "text-green-500"
+                      : "text-gray-400"
                     }`}>
                     {typingUser
                       ? "Typing..."
@@ -532,9 +549,8 @@ export default function Chat({ socket, user, connected }) {
         </header>
 
         <main className={`flex-1 overflow-y-auto px-10 py-6 space-y-4 
-  bg-linear-to-br from-indigo-50 via-white to-purple-50 relative ${
-    activeChat ? "" : "flex items-center justify-center"
-  }`}>
+  bg-linear-to-br from-indigo-50 via-white to-purple-50 relative ${activeChat ? "" : "flex items-center justify-center"
+          }`}>
 
           <div className="absolute -top-20 -left-20 w-72 h-72 
   bg-indigo-400 rounded-full blur-3xl opacity-20" />
@@ -547,11 +563,10 @@ export default function Chat({ socket, user, connected }) {
               {messages.map((msg, index) => (
                 <div
                   key={index}
-                  className={`px-3 py-2 rounded-2xl shadow ${
-                    msg.senderId === user.id
+                  className={`px-3 py-2 rounded-2xl shadow ${msg.senderId === user.id
                       ? "ml-auto bg-indigo-600 text-white rounded-br-none max-w-xs"
                       : "mr-auto bg-white border border-gray-200 rounded-bl-none max-w-xs"
-                  }`}
+                    }`}
                 >
                   {msg.fileType ? (
                     <div className="space-y-1">
@@ -587,22 +602,19 @@ export default function Chat({ socket, user, connected }) {
                           href={msg.fileUrl || msg.text}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className={`flex items-center gap-3 p-3 rounded-lg no-underline transition ${
-                            msg.senderId === user.id
+                          className={`flex items-center gap-3 p-3 rounded-lg no-underline transition ${msg.senderId === user.id
                               ? "bg-indigo-500 hover:bg-indigo-700"
                               : "bg-gray-100 hover:bg-gray-200"
-                          }`}
+                            }`}
                         >
                           <span className="text-2xl">{getFileIcon(msg.fileName)}</span>
                           <div className="min-w-0">
-                            <div className={`text-sm font-semibold truncate ${
-                              msg.senderId === user.id ? "text-white" : "text-gray-800"
-                            }`}>
+                            <div className={`text-sm font-semibold truncate ${msg.senderId === user.id ? "text-white" : "text-gray-800"
+                              }`}>
                               {msg.fileName}
                             </div>
-                            <div className={`text-xs ${
-                              msg.senderId === user.id ? "text-indigo-100" : "text-gray-500"
-                            }`}>
+                            <div className={`text-xs ${msg.senderId === user.id ? "text-indigo-100" : "text-gray-500"
+                              }`}>
                               Document
                             </div>
                           </div>
@@ -615,17 +627,15 @@ export default function Chat({ socket, user, connected }) {
                           href={msg.fileUrl || msg.text}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className={`flex items-center gap-2 p-3 rounded-lg no-underline transition ${
-                            msg.senderId === user.id
+                          className={`flex items-center gap-2 p-3 rounded-lg no-underline transition ${msg.senderId === user.id
                               ? "bg-indigo-500 hover:bg-indigo-700"
                               : "bg-gray-100 hover:bg-gray-200"
-                          }`}
+                            }`}
                         >
                           <span className="text-xl">📎</span>
                           <div className="min-w-0">
-                            <div className={`text-sm font-medium truncate ${
-                              msg.senderId === user.id ? "text-white" : "text-gray-800"
-                            }`}>
+                            <div className={`text-sm font-medium truncate ${msg.senderId === user.id ? "text-white" : "text-gray-800"
+                              }`}>
                               {msg.fileName || "File"}
                             </div>
                           </div>
@@ -695,19 +705,19 @@ export default function Chat({ socket, user, connected }) {
 
               {/* Feature Cards */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 animate-slide-up" style={{ animationDelay: "0.3s" }}>
-                <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-200 hover:border-indigo-300 hover:shadow-lg transition">
+                <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-200 hover:border-indigo-300 hover:shadow-lg transition cursor-pointer">
                   <div className="text-3xl mb-3 flex justify-center"><FiMessageCircle className="text-indigo-500" /></div>
                   <h3 className="font-semibold text-gray-800 mb-2">Instant Messaging</h3>
                   <p className="text-sm text-gray-600">Send messages in real-time</p>
                 </div>
 
-                <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-200 hover:border-indigo-300 hover:shadow-lg transition">
+                <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-200 hover:border-indigo-300 hover:shadow-lg transition cursor-pointer">
                   <div className="text-3xl mb-3 flex justify-center"><FiUsers className="text-indigo-500" /></div>
                   <h3 className="font-semibold text-gray-800 mb-2">Group Chats</h3>
                   <p className="text-sm text-gray-600">Chat with multiple friends</p>
                 </div>
 
-                <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-200 hover:border-indigo-300 hover:shadow-lg transition">
+                <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-200 hover:border-indigo-300 hover:shadow-lg transition cursor-pointer">
                   <div className="text-3xl mb-3 flex justify-center"><FiFile className="text-indigo-500" /></div>
                   <h3 className="font-semibold text-gray-800 mb-2">File Sharing</h3>
                   <p className="text-sm text-gray-600">Share media and documents</p>

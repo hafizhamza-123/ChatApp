@@ -19,6 +19,7 @@ model User {
 
   memberships ChatMember[]
   messages    Message[]
+  reads       MessageRead[]
 
   @@index([isOnline])
 }
@@ -47,21 +48,39 @@ model ChatMember {
   @@index([chatId])
 }
 
+model MessageRead {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  messageId String   @db.ObjectId
+  userId    String   @db.ObjectId
+  deliveredAt DateTime @default(now())
+  readAt    DateTime @default(now())
+
+  message   Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user      User    @relation(fields: [userId], references: [id])
+
+  @@unique([messageId, userId])
+  @@index([userId])
+  @@index([messageId])
+}
+
+
 model Message {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   chatId    String   @db.ObjectId
   senderId  String   @db.ObjectId
 
-  content   String?        // for text messages
-  fileUrl   String?        // cloudinary secure_url
-  fileType  String?        // image | file | audio
-  fileName  String?        // original file name
-  publicId  String?        // cloudinary public_id (for delete later)
+  content   String? 
+  fileUrl   String?       
+  fileType  String?        
+  fileName  String?        
+  publicId  String?        
 
   createdAt DateTime @default(now())
 
   chat      Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
   sender    User @relation(fields: [senderId], references: [id])
+
+  reads     MessageRead[]
 
   @@index([chatId, createdAt])
   @@index([senderId])
