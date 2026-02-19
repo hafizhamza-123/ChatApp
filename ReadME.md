@@ -4,6 +4,13 @@ A professional-grade full-stack real-time messaging platform built with modern w
 
 ---
 
+## ChatApp Snapshots
+
+<img width="959" height="438" alt="image" src="https://github.com/user-attachments/assets/c68c0d13-cfcf-413e-8207-30cd88e4c400" />
+<img width="960" height="442" alt="image" src="https://github.com/user-attachments/assets/7e046d3c-8e34-4b51-a0a0-72fca0662ed6" />
+<img width="954" height="439" alt="image" src="https://github.com/user-attachments/assets/9642f761-ba52-4e06-9db0-6966bbb97eba" />
+<img width="959" height="440" alt="image" src="https://github.com/user-attachments/assets/49438345-11f4-436c-a8a9-f8405731fa43" />
+
 ## 🚀 Core Features
 
 ### Authentication & Security
