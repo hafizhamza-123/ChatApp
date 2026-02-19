@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { FiSend, FiLogOut, FiPaperclip, FiX, FiFile, FiMessageCircle, FiUsers, FiLoader, FiMoreVertical, FiTrash2,} from "react-icons/fi";
+import { FiSend, FiLogOut, FiPaperclip, FiX, FiFile, FiMessageCircle, FiUsers, FiLoader, FiMoreVertical, FiTrash2, FiUser} from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import API from "../api/axios";
+import ProfileModal from "./ProfileModal";
 
 export default function Chat({ socket, user, connected }) {
   const [chats, setChats] = useState([]);
@@ -10,6 +11,8 @@ export default function Chat({ socket, user, connected }) {
   const [activeChat, setActiveChat] = useState(null);
   const [search, setSearch] = useState("");
   const [showGroupModal, setShowGroupModal] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [currentUser, setCurrentUser] = useState(user);
 
   const [allUsers, setAllUsers] = useState([]);
   const [selectedUsers, setSelectedUsers] = useState([]);
@@ -34,6 +37,21 @@ export default function Chat({ socket, user, connected }) {
       userId: user.id,
     });
   }, [socket, user]);
+
+  // Fetch user profile
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const res = await API.get("/users/profile");
+        if (res.data.success) {
+          setCurrentUser(res.data.data);
+        }
+      } catch (err) {
+        console.error("Fetch user profile error:", err);
+      }
+    };
+    fetchUserProfile();
+  }, []);
 
   useEffect(() => {
     const fetchChats = async () => {
@@ -260,6 +278,10 @@ export default function Chat({ socket, user, connected }) {
     navigate("/login");
   };
 
+  const handleProfileUpdate = (updatedUserData) => {
+    setCurrentUser(updatedUserData);
+  };
+
   const getOtherMember = (chat) => {
     if (!chat || chat.isGroup) return null;
     return chat.members.find(m => m.user.id !== user.id)?.user;
@@ -339,10 +361,31 @@ export default function Chat({ socket, user, connected }) {
       {/* SIDEBAR */}
       <aside className="w-80 bg-white border-r border-gray-200 flex flex-col shadow-xl">
         <div className="p-6 border-b bg-white">
-          <div className="text-2xl font-bold text-indigo-600">ChatApp</div>
-
-          <div className="text-xs text-gray-500 mt-1">
-            Logged in as <span className="font-semibold">{user.username}</span>
+          <div className="flex justify-between items-start gap-4">
+            <div>
+              <div className="text-2xl font-bold text-indigo-600">ChatApp</div>
+              <div className="text-xs text-gray-500 mt-1">
+                Logged in as <span className="font-semibold">{currentUser.username}</span>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowProfileModal(true)}
+              className="shrink-0 relative group"
+            >
+              {currentUser?.avatar ? (
+                <img
+                  src={currentUser.avatar}
+                  alt="Profile"
+                  className="w-12 h-12 rounded-full object-cover border-2 border-indigo-600 hover:border-indigo-700 transition cursor-pointer"
+                />
+              ) : (
+                <div className="w-12 h-12 rounded-full bg-linear-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold border-2 border-indigo-600 hover:border-indigo-700 transition">
+                  {currentUser?.username?.charAt(0).toUpperCase()}
+                </div>
+              )}
+              <div className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
+              
+            </button>
           </div>
 
           <input
@@ -825,6 +868,14 @@ export default function Chat({ socket, user, connected }) {
           </div>
         )}
       </div>
+
+      {/* Profile Modal */}
+      <ProfileModal
+        isOpen={showProfileModal}
+        onClose={() => setShowProfileModal(false)}
+        user={currentUser}
+        onProfileUpdate={handleProfileUpdate}
+      />
     </div>
   );
 }

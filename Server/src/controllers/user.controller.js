@@ -213,6 +213,79 @@ const getUserProfile = async (req, res) => {
   }
 };
 
+const updateProfile = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { username, email } = req.body;
+    let updateData = {};
+
+    if (username) {
+      const existingUsername = await prisma.user.findFirst({
+        where: {
+          username,
+          id: { not: userId }
+        }
+      });
+
+      if (existingUsername) {
+        return res.status(400).json({
+          success: false,
+          message: "Username already taken"
+        });
+      }
+      updateData.username = username;
+    }
+
+    if (email) {
+      const existingEmail = await prisma.user.findFirst({
+        where: {
+          email,
+          id: { not: userId }
+        }
+      });
+
+      if (existingEmail) {
+        return res.status(400).json({
+          success: false,
+          message: "Email already in use"
+        });
+      }
+      updateData.email = email;
+    }
+
+    if (req.file) {
+      updateData.avatar = req.file.path;
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: updateData,
+      select: {
+        id: true,
+        email: true,
+        username: true,
+        avatar: true,
+        isOnline: true,
+        lastSeen: true,
+        createdAt: true
+      }
+    });
+
+    return res.json({
+      success: true,
+      message: "Profile updated successfully",
+      data: updatedUser
+    });
+
+  } catch (error) {
+    console.error("Update profile error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error updating profile"
+    });
+  }
+};
+
 const logoutUser = async (req, res) => {
   await prisma.user.update({
     where: { id: req.user.id },
@@ -226,10 +299,12 @@ const logoutUser = async (req, res) => {
 };
 
 
+
 export {
   registerUser,
   loginUser,
   getAllUsers,
   getUserProfile,
+  updateProfile,
   logoutUser
 };
