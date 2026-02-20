@@ -56,9 +56,10 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       const res = await API.post("/users/login", { email, password });
-      const { user, token } = res.data.data;
+      const { user, token, refreshToken } = res.data.data;
 
       localStorage.setItem("token", token);
+      localStorage.setItem("refreshToken", refreshToken);
       setUser(user);
 
       return { success: true, user };
@@ -70,11 +71,21 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Logout 
-  const logout = () => {
-    localStorage.removeItem("token");
-    setUser(null);
-    window.location.href = "/login";
+
+  // Logout
+  const logout = async () => {
+    try {
+      setLoading(true);
+      await API.post("/users/logout");
+    } catch (err) {
+      // Ignore errors, proceed with logout
+    } finally {
+      localStorage.removeItem("token");
+      localStorage.removeItem("refreshToken");
+      setUser(null);
+      setLoading(false);
+      window.location.replace("/login");
+    }
   };
 
   return (

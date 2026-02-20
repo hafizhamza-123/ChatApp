@@ -32,9 +32,11 @@ API.interceptors.response.use(
         if (!refreshToken) throw new Error("No refresh token");
 
         const res = await axios.post(
-          `${import.meta.env.VITE_API_BASE_URL}/auth/refresh-token`,
+          `${import.meta.env.VITE_API_BASE_URL}/users/refreshToken`,
           { token: refreshToken } 
         );
+
+        // console.log("refresh token response:", res)
 
         const newToken = res.data.token;
 

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useAuth } from "../context/AuthContext";
 import { FiSend, FiLogOut, FiPaperclip, FiX, FiFile, FiMessageCircle, FiUsers, FiLoader, FiMoreVertical, FiTrash2, FiUser} from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import API from "../api/axios";
@@ -28,6 +29,7 @@ export default function Chat({ socket, user, connected }) {
   const bottomRef = useRef(null);
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
+  const { logout } = useAuth();
 
   useEffect(() => {
     if (!socket || !user) return;
@@ -268,15 +270,8 @@ export default function Chat({ socket, user, connected }) {
     }
   };
 
-  const handleLogout = async () => {
-    try {
-      await API.post("/users/logout");
-    } catch { }
 
-    if (socket) socket.disconnect();
-    localStorage.removeItem("token");
-    navigate("/login");
-  };
+  // Remove handleLogout, use logout from context
 
   const handleProfileUpdate = (updatedUserData) => {
     setCurrentUser(updatedUserData);
@@ -583,7 +578,7 @@ export default function Chat({ socket, user, connected }) {
           </div>
 
           <button
-            onClick={handleLogout}
+            onClick={logout}
             className="flex items-center gap-2 px-5 py-2 rounded-xl bg-indigo-600 text-white text-sm shadow hover:opacity-90 cursor-pointer"
           >
             <FiLogOut size={16} />

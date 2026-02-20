@@ -12,6 +12,7 @@ model User {
   email     String   @unique
   username  String   @unique
   password  String
+  refreshToken String?
   avatar    String?
   isOnline  Boolean  @default(false)
   lastSeen  DateTime?

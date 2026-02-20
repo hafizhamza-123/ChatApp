@@ -2,8 +2,10 @@ import prisma from "../../prismaClient.js";
 import {
   hashPassword,
   comparePassword,
-  generateToken
+  generateToken,
+  generateRefreshToken
 } from "../utils/helpers.js";
+import jwt from "jsonwebtoken";
 
 const registerUser = async (req, res) => {
   try {
@@ -111,6 +113,12 @@ const loginUser = async (req, res) => {
     });
 
     const token = generateToken(user.id, user.email);
+    const refreshToken = generateRefreshToken(user.id);
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { refreshToken }
+    });
 
     delete user.password;
 
@@ -119,7 +127,8 @@ const loginUser = async (req, res) => {
       message: "Login successful",
       data: {
         user,
-        token
+        token,
+        refreshToken
       }
     });
 
@@ -298,6 +307,47 @@ const logoutUser = async (req, res) => {
   res.json({ success: true, message: "Logged out" });
 };
 
+const refreshAccessToken = async (req, res) => {
+  try {
+    const { token } = req.body;
+
+    console.log("Received refresh token:", token);
+
+    if (!token) {
+      return res.status(401).json({ message: "Refresh token required" });
+    }
+
+    // Verify refresh token
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_REFRESH_SECRET,
+    );
+    
+    console.log("Decoded refresh token:", decoded)
+    
+    // Check token in DB
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.id }
+    });
+
+    if (!user || user.refreshToken !== token) {
+      return res.status(403).json({ message: "Invalid refresh token" });
+    }
+
+    // Generate new access token
+    const newAccessToken = generateToken(
+      user.id,
+      user.email
+    );
+
+    return res.json({
+      token: newAccessToken
+    });
+
+  } catch (error) {
+    return res.status(403).json({ message: "Invalid or expired refresh token" });
+  }
+};
 
 
 export {
@@ -306,5 +356,6 @@ export {
   getAllUsers,
   getUserProfile,
   updateProfile,
-  logoutUser
+  logoutUser,
+  refreshAccessToken
 };
