@@ -8,6 +8,15 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+export async function sendOtpEmail(to, otp) {
+  await transporter.sendMail({
+    from: `"Auth App" <${process.env.EMAIL_USER}>`,
+    to,
+    subject: "Your OTP Code",
+    html: `<h2>Your OTP: ${otp}</h2><p>Valid for 10 minutes</p>`,
+  });
+}
+
 
 export async function sendResetPasswordEmail(to, link) {
   await transporter.sendMail({

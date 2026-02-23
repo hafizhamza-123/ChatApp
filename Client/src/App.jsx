@@ -12,6 +12,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword.jsx";
 import ResetPassword from "./pages/ResetPassword.jsx";
+import VerifyOtp from "./pages/VerifyOtp.jsx";
 
 const SOCKET_URL =
   import.meta.env.VITE_SOCKET_URL || "http://localhost:3001";
@@ -70,10 +71,14 @@ function AppRoutes() {
         path="/register"
         element={!user ? <Register /> : <Navigate to="/chat" replace />}
       />
+      <Route
+        path="/verify-otp"
+        element={<VerifyOtp />} />
 
       <Route
         path="/forgot-password"
         element={<ForgotPassword />} />
+
       <Route
         path="/reset-password/:token"
         element={<ResetPassword />} />

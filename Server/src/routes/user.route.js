@@ -1,6 +1,6 @@
 import { Router } from "express";
 
-import { registerUser, loginUser, getAllUsers, getUserProfile, updateProfile, logoutUser, refreshAccessToken, forgotPassword, resetPassword } from "../controllers/user.controller.js";
+import { registerUser, loginUser, getAllUsers, getUserProfile, updateProfile, logoutUser, refreshAccessToken, forgotPassword, resetPassword, verifyOtp, resendOtp } from "../controllers/user.controller.js";
 import { authenticate } from "../middlewares/authMiddleware.js";
 import upload from "../middlewares/upload.js";
 
@@ -9,6 +9,8 @@ const router = Router();
 // Public routes
 router.post("/register", registerUser);
 router.post("/login", loginUser);
+router.post("/verify-otp", verifyOtp);
+router.post("/resend-otp", resendOtp);
 router.post("/refreshToken", refreshAccessToken);
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password/:token", resetPassword);

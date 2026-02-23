@@ -12,6 +12,9 @@ model User {
   email     String   @unique
   username  String   @unique
   password  String
+  isVerified     Boolean   @default(false)
+  otp            String?
+  otpExpiresAt   DateTime?
   refreshToken String?
   resetToken     String?
   resetExpiresAt DateTime?

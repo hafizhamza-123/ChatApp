@@ -1,7 +1,7 @@
 import prisma from "../../prismaClient.js";
 import crypto from "crypto";
 import bcrypt from "bcryptjs";
-import { sendResetPasswordEmail } from "../utils/mailer.js";
+import { sendOtpEmail,sendResetPasswordEmail } from "../utils/mailer.js";
 import {
   hashPassword,
   comparePassword,
@@ -69,6 +69,38 @@ const registerUser = async (req, res) => {
   }
 };
 
+const verifyOtp = async(req, res) => {
+    const { email, otp } = req.body;
+
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user || user.otp !== otp || user.otpExpiresAt < new Date()) {
+        return res.status(400).json({ error: "Invalid OTP" });
+    }
+
+    await prisma.user.update({
+        where: { email },
+        data: { isVerified: true, otp: null, otpExpiresAt: null },
+    });
+
+    res.json({ message: "Account verified" });
+}
+
+const resendOtp = async(req, res) => {
+    const { email } = req.body;
+    const otp = crypto.randomInt(100000, 999999).toString();
+
+    await prisma.user.update({
+        where: { email },
+        data: {
+            otp,
+            otpExpiresAt: new Date(Date.now() + 10 * 60000),
+        },
+    });
+
+    await sendOtpEmail(email, otp);
+    res.json({ message: "OTP resent" });
+}
+
 const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -80,6 +112,8 @@ const loginUser = async (req, res) => {
       });
     }
 
+    
+     
     const user = await prisma.user.findUnique({
       where: { email },
       select: {
@@ -88,16 +122,13 @@ const loginUser = async (req, res) => {
         username: true,
         password: true,
         avatar: true,
-        isOnline: true
+        isOnline: true,
+        isVerified: true,
       }
     });
 
-    if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid credentials"
-      });
-    }
+    if (!user || !user.isVerified)
+        return res.status(401).json({ error: "Invalid credentials" });
 
     const isPasswordValid = await comparePassword(password, user.password);
     if (!isPasswordValid) {
@@ -461,6 +492,8 @@ const resetPassword = async(req, res) =>  {
 
 export {
   registerUser,
+  verifyOtp,
+  resendOtp,
   loginUser,
   getAllUsers,
   getUserProfile,
