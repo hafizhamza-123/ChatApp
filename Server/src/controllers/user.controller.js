@@ -352,8 +352,7 @@ const refreshAccessToken = async (req, res) => {
   }
 };
 
-// FORGOT PASSWORD
-export async function forgotPassword(req, res) {
+const forgotPassword = async (req, res) =>  {
 
     console.trace("Forgot password request received");
     
@@ -401,8 +400,7 @@ export async function forgotPassword(req, res) {
     }
 }
 
-// RESET PASSWORD
-export async function resetPassword(req, res) {
+const resetPassword = async(req, res) =>  {
     try {
         const { token } = req.params;
         const { password } = req.body;
@@ -427,7 +425,6 @@ export async function resetPassword(req, res) {
             });
         }
 
-        // Hash received token to match DB
         const hashedToken = crypto
             .createHash("sha256")
             .update(token)
@@ -469,5 +466,7 @@ export {
   getUserProfile,
   updateProfile,
   logoutUser,
-  refreshAccessToken
+  refreshAccessToken,
+  forgotPassword,
+  resetPassword
 };
