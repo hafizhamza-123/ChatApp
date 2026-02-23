@@ -10,6 +10,8 @@ import { useAuth } from "./context/AuthContext";
 import Chat from "./components/Chat";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import ForgotPassword from "./pages/ForgotPassword.jsx";
+import ResetPassword from "./pages/ResetPassword.jsx";
 
 const SOCKET_URL =
   import.meta.env.VITE_SOCKET_URL || "http://localhost:3001";
@@ -68,6 +70,13 @@ function AppRoutes() {
         path="/register"
         element={!user ? <Register /> : <Navigate to="/chat" replace />}
       />
+
+      <Route
+        path="/forgot-password"
+        element={<ForgotPassword />} />
+      <Route
+        path="/reset-password/:token"
+        element={<ResetPassword />} />
 
       {/* Protected Route */}
       <Route

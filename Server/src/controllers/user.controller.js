@@ -1,4 +1,7 @@
 import prisma from "../../prismaClient.js";
+import crypto from "crypto";
+import bcrypt from "bcryptjs";
+import { sendResetPasswordEmail } from "../utils/mailer.js";
 import {
   hashPassword,
   comparePassword,
@@ -349,6 +352,115 @@ const refreshAccessToken = async (req, res) => {
   }
 };
 
+// FORGOT PASSWORD
+export async function forgotPassword(req, res) {
+
+    console.trace("Forgot password request received");
+    
+    try {
+        const { email } = req.body;
+
+        if (!email) {
+            return res.status(400).json({ error: "Email is required" });
+        }
+        
+        const user = await prisma.user.findUnique({ where: { email } });
+
+        if (!user) {
+            return res.status(400).json({ error: "Email not registered" });
+        }
+
+        // Generate reset token
+        const resetToken = jwt.sign(
+            { id: user.id },
+            process.env.RESET_PASSWORD_SECRET,
+            { expiresIn: "15m" }
+        );
+
+        // Hash token before saving
+        const hashedToken = crypto
+            .createHash("sha256")
+            .update(resetToken)
+            .digest("hex");
+
+        await prisma.user.update({
+            where: { id: user.id },
+            data: {
+                resetToken: hashedToken,
+            },
+        });
+
+        const resetLink = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+        await sendResetPasswordEmail(email, resetLink);
+
+        return res.json({ message: "Password reset link sent" });
+
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ error: "Server error" });
+    }
+}
+
+// RESET PASSWORD
+export async function resetPassword(req, res) {
+    try {
+        const { token } = req.params;
+        const { password } = req.body;
+
+        if (!token) {
+            return res.status(400).json({ error: "Token missing" });
+        }
+
+        if (!password) {
+            return res.status(400).json({ error: "Password is required" });
+        }
+
+        let decoded;
+        try {
+            decoded = jwt.verify(token, process.env.RESET_PASSWORD_SECRET);
+        } catch (err) {
+            return res.status(400).json({
+                error:
+                    err.name === "TokenExpiredError"
+                        ? "Token expired"
+                        : "Invalid token",
+            });
+        }
+
+        // Hash received token to match DB
+        const hashedToken = crypto
+            .createHash("sha256")
+            .update(token)
+            .digest("hex");
+
+        const user = await prisma.user.findFirst({
+            where: {
+                id: decoded.id,
+                resetToken: hashedToken,
+            },
+        });
+
+        if (!user) {
+            return res.status(400).json({ error: "Invalid or expired token" });
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        await prisma.user.update({
+            where: { id: user.id },
+            data: {
+                password: hashedPassword,
+                resetToken: null, 
+            },
+        });
+
+        return res.json({ message: "Password reset successful" });
+
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ error: "Server error" });
+    }
+}
 
 export {
   registerUser,

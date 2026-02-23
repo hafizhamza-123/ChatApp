@@ -36,7 +36,7 @@ API.interceptors.response.use(
           { token: refreshToken } 
         );
 
-        // console.log("refresh token response:", res)
+        console.log("refresh token response:", res)
 
         const newToken = res.data.token;
 

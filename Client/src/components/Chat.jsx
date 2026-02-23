@@ -355,7 +355,7 @@ export default function Chat({ socket, user, connected }) {
 
       {/* SIDEBAR */}
       <aside className="w-80 bg-white border-r border-gray-200 flex flex-col shadow-xl">
-        <div className="p-6 border-b bg-white">
+        <div className="p-6 border-b border-gray-200 bg-white">
           <div className="flex justify-between items-start gap-4">
             <div>
               <div className="text-2xl font-bold text-indigo-600">ChatApp</div>
@@ -545,7 +545,7 @@ export default function Chat({ socket, user, connected }) {
       {/* CHAT AREA */}
       <div className="flex-1 flex flex-col bg-white">
 
-        <header className="px-8 py-4 border-b flex justify-between items-center bg-white shadow-sm">
+        <header className="px-8 py-4 border-b border-gray-200 flex justify-between items-center bg-white shadow-sm">
           <div>
             {activeChat ? (
               <>
@@ -772,7 +772,7 @@ export default function Chat({ socket, user, connected }) {
         </main>
 
         {activeChat && (
-          <div className="px-8 py-4 bg-white border-t">
+          <div className="px-8 py-4 bg-white border-t border-gray-200">
             {/* File Preview */}
             {filePreview && (
               <div className="mb-3 p-3 bg-indigo-50 rounded-xl border border-indigo-200 flex items-center justify-between">

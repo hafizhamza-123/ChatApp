@@ -13,6 +13,8 @@ model User {
   username  String   @unique
   password  String
   refreshToken String?
+  resetToken     String?
+  resetExpiresAt DateTime?
   avatar    String?
   isOnline  Boolean  @default(false)
   lastSeen  DateTime?
