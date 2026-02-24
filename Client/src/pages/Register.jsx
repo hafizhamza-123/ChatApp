@@ -24,8 +24,8 @@ function Register() {
       setMessage({ type: "success", text: res.message || "Registered successfully!" });
 
       setTimeout(() => {
-        navigate("/login", { replace: true });
-      }, 1000);
+        navigate("/verify-otp", { replace: true });
+      }, 1200);
     } else {
       setMessage({ type: "error", text: res.message || "Registration failed." });
     }

@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { useNavigate} from "react-router-dom";
 import API from "../api/axios";
 
 export default function VerifyOtp() {
@@ -9,7 +10,7 @@ export default function VerifyOtp() {
   const [message, setMessage] = useState(null);
 
   const inputsRef = useRef([]);
-
+  const navigate = useNavigate();
   const handleChange = (element, index) => {
     if (isNaN(element.value)) return;
 
@@ -17,14 +18,12 @@ export default function VerifyOtp() {
     newOtp[index] = element.value;
     setOtp(newOtp);
 
-    // Move to next box automatically
     if (element.value && index < 5) {
       inputsRef.current[index + 1].focus();
     }
   };
 
   const handleKeyDown = (e, index) => {
-    // Move back on backspace
     if (e.key === "Backspace" && !otp[index] && index > 0) {
       inputsRef.current[index - 1].focus();
     }
@@ -47,6 +46,9 @@ export default function VerifyOtp() {
         type: "success",
         text: res.data.message || "OTP verified!",
       });
+      setTimeout(() => {
+        navigate("/login", { replace: true });
+      }, 1200);
     } catch (err) {
       setMessage({
         type: "error",
