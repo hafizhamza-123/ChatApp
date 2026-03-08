@@ -99,7 +99,7 @@ export default function Chat({ socket, user, connected }) {
         />
       </div>
 
-      <ProfileModal
+      <ProfileModal  
         isOpen={state.showProfileModal}
         onClose={() => actions.setShowProfileModal(false)}
         user={state.currentUser}

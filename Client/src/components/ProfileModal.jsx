@@ -7,6 +7,7 @@ export default function ProfileModal({ isOpen, onClose, user, onProfileUpdate })
     username: "",
     email: ""
   });
+  
   const [avatar, setAvatar] = useState(null);
   const [previewUrl, setPreviewUrl] = useState("");
   const [loading, setLoading] = useState(false);
@@ -106,11 +107,11 @@ export default function ProfileModal({ isOpen, onClose, user, onProfileUpdate })
 
   return (
     <div
-      className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-1000 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
       onClick={onClose}
     >
       <div
-        className="max-h-[80vh] w-full max-w-[450px] overflow-y-auto rounded-xl bg-white shadow-[0_10px_40px_rgba(0,0,0,0.15)]"
+        className="max-h-[80vh] w-full max-w-112.5 overflow-y-auto rounded-xl bg-white shadow-[0_10px_40px_rgba(0,0,0,0.15)]"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between rounded-t-xl border-b border-[#f0f0f0] bg-[linear-gradient(135deg,#667eea_0%,#764ba2_100%)] px-6 py-6 text-white max-[480px]:px-4 max-[480px]:py-4">
@@ -130,10 +131,10 @@ export default function ProfileModal({ isOpen, onClose, user, onProfileUpdate })
                 <img
                   src={previewUrl}
                   alt="Avatar preview"
-                  className="h-[120px] w-[120px] rounded-full border-4 border-[#f0f0f0] object-cover shadow-[0_4px_12px_rgba(0,0,0,0.1)]"
+                  className="h-30 w-30 rounded-full border-4 border-[#f0f0f0] object-cover shadow-[0_4px_12px_rgba(0,0,0,0.1)]"
                 />
               ) : (
-                <div className="flex h-[120px] w-[120px] items-center justify-center rounded-full bg-[linear-gradient(135deg,#667eea_0%,#764ba2_100%)] text-white shadow-[0_4px_12px_rgba(0,0,0,0.1)]">
+                <div className="flex h-30 w-30 items-center justify-center rounded-full bg-[linear-gradient(135deg,#667eea_0%,#764ba2_100%)] text-white shadow-[0_4px_12px_rgba(0,0,0,0.1)]">
                   <FiCamera size={40} />
                 </div>
               )}
@@ -157,14 +158,14 @@ export default function ProfileModal({ isOpen, onClose, user, onProfileUpdate })
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             {error && (
-              <div className="flex items-center gap-2 rounded-lg border border-[#fcc] bg-[#fee] px-[14px] py-3 text-[13px] text-[#c33]">
+              <div className="flex items-center gap-2 rounded-lg border border-[#fcc] bg-[#fee] px-3.5 py-3 text-[13px] text-[#c33]">
                 <FiAlertCircle size={16} />
                 <span>{error}</span>
               </div>
             )}
 
             {success && (
-              <div className="flex items-center gap-2 rounded-lg border border-[#cfc] bg-[#efe] px-[14px] py-3 text-[13px] text-[#3c3]">
+              <div className="flex items-center gap-2 rounded-lg border border-[#cfc] bg-[#efe] px-3.5 py-3 text-[13px] text-[#3c3]">
                 <span>{success}</span>
               </div>
             )}

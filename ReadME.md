@@ -1,101 +1,122 @@
-# ChatApp - Real-Time Chat Application
+# ChatApp - Real-Time Messaging Platform
 
-A professional-grade full-stack real-time messaging platform built with modern web technologies. ChatApp enables seamless communication through direct and group chats with rich media support, featuring instant message delivery, real-time typing indicators, and comprehensive user presence tracking.
+A modern, full-stack chat application enabling seamless real-time communication with direct and group messaging, media sharing, and robust authentication. Built with React, Node.js, Express, Prisma, MongoDB, and Socket.IO, it delivers a professional, scalable, and secure chat experience.
 
 ---
 
-## ChatApp Snapshots
+## 📸 Snapshots
 
 <img width="959" height="438" alt="image" src="https://github.com/user-attachments/assets/c68c0d13-cfcf-413e-8207-30cd88e4c400" />
 <img width="960" height="442" alt="image" src="https://github.com/user-attachments/assets/7e046d3c-8e34-4b51-a0a0-72fca0662ed6" />
 <img width="954" height="439" alt="image" src="https://github.com/user-attachments/assets/9642f761-ba52-4e06-9db0-6966bbb97eba" />
 <img width="959" height="440" alt="image" src="https://github.com/user-attachments/assets/49438345-11f4-436c-a8a9-f8405731fa43" />
 
-## 🚀 Core Features
+---
+
+## 🚀 Features
 
 ### Authentication & Security
-- User registration and login with email validation
-- JWT-based authentication with 7-day token expiry
-- Secure password hashing using bcryptjs
-- Token-based request authorization for protected endpoints
-- Logout functionality with state invalidation
+- User registration, login, and email verification
+- JWT-based authentication (7-day expiry)
+- Secure password hashing (bcryptjs)
+- Protected routes and logout
 
 ### Real-Time Messaging
-- Instant message delivery via Socket.IO WebSocket
-- Real-time typing indicators
-- Online/offline user status tracking
-- User presence in active chat rooms
-- Message history with persistence
+- Instant message delivery (Socket.IO)
+- Typing indicators and online/offline status
+- Real-time user presence in chats
+- Persistent message history
 
 ### Chat Management
-- **Direct Messaging**: One-on-one private conversations
-- **Group Chats**: Multi-member group conversations with member management
-- Searchable chat list with instant filter
-- Chat deletion capability
-- Last message preview in chat list
+- Direct (1:1) and group chats
+- Group creation with member management
+- Searchable chat list and chat deletion
+- Last message preview
 
-### Media Sharing
-- **Image Support**: JPEG, PNG, WebP with inline preview
-- **Video Support**: MP4, MOV, AVI, MKV, FLV, WMV, WebM with player controls
-- **Audio Support**: MP3, WAV, M4A, AAC, FLAC, OGG with audio player
-- **Document Support**: PDF, DOC, DOCX, TXT, XLS, XLSX, PPT, PPTX
-- **Cloud Storage**: Cloudinary integration for secure file hosting
+### Media & File Sharing
+- Images: JPEG, PNG, WebP (inline preview)
+- Videos: MP4, MOV, AVI, MKV, FLV, WMV, WebM
+- Audio: MP3, WAV, M4A, AAC, FLAC, OGG
+- Documents: PDF, DOC(X), TXT, XLS(X), PPT(X)
+- Cloudinary integration for secure file hosting
 - Optimized media sizing and compression
 
 ### User Experience
-- Responsive modern UI with Tailwind CSS
-- Real-time user list with search functionality
-- Group creation modal with multi-select member picker
-- Message timestamps with localized formatting
-- Visual online status indicators
-- Smooth scrolling and auto-focus on latest messages
+- Responsive UI (Tailwind CSS)
+- Real-time user list with search
+- Group creation modal with multi-select
+- Message timestamps (localized)
+- Online status indicators
+- Smooth scrolling, auto-focus on new messages
 
 ---
 
-## 📁 Project Structure
+## 📁 Folder Structure
 
 ```
 chatApp/
-├── Client/                          # React Frontend (Vite)
+├── Client/                  # React Frontend (Vite)
+│   ├── public/
 │   ├── src/
 │   │   ├── api/
-│   │   │   └── axios.js            # HTTP client with auth interceptors
+│   │   │   └── axios.js
+│   │   ├── assets/
 │   │   ├── components/
-│   │   │   └── Chat.jsx            # Main chat interface component
+│   │   │   ├── Chat.jsx
+│   │   │   ├── ProfileModal.jsx
+│   │   │   └── chat/
+│   │   │       ├── ChatHeader.jsx
+│   │   │       ├── ChatMessages.jsx
+│   │   │       ├── ChatSidebar.jsx
+│   │   │       ├── EmptyChatState.jsx
+│   │   │       ├── GroupModal.jsx
+│   │   │       ├── MessageInput.jsx
+│   │   │       └── utils/
+│   │   │           ├── chatHelpers.js
+│   │   │           └── fileHelpers.js
 │   │   ├── context/
-│   │   │   └── AuthContext.jsx     # Authentication state management
+│   │   │   └── AuthContext.jsx
+│   │   ├── hooks/
+│   │   │   └── chat/
+│   │   │       └── useChatController.js
 │   │   ├── pages/
-│   │   │   ├── Login.jsx           # Login page
-│   │   │   └── Register.jsx        # Registration page
-│   │   ├── App.jsx                 # Route definitions & Socket setup
-│   │   └── main.jsx                # Application entry point
+│   │   │   ├── ForgotPassword.jsx
+│   │   │   ├── Login.jsx
+│   │   │   ├── Register.jsx
+│   │   │   ├── ResetPassword.jsx
+│   │   │   └── VerifyOtp.jsx
+│   │   ├── App.css
+│   │   ├── App.jsx
+│   │   └── main.jsx
 │   ├── package.json
-│   ├── vite.config.js              # Vite configuration
+│   ├── vite.config.js
+│   ├── eslint.config.js
 │   └── index.html
 │
-└── Server/                          # Express Backend
+└── Server/                  # Express Backend
+    ├── prisma/
+    │   └── schema.prisma
     ├── src/
     │   ├── config/
-    │   │   ├── cloundinary.js       # Cloudinary file upload config
-    │   │   └── connectToDatabase.js # MongoDB connection setup
+    │   │   ├── cloundinary.js
+    │   │   └── connectToDatabase.js
     │   ├── controllers/
-    │   │   ├── user.controller.js   # User auth & profile logic
-    │   │   ├── chat.controller.js   # Chat CRUD operations
-    │   │   └── message.controller.js # Message & file upload logic
-    │   ├── middlewares/
-    │   │   ├── authMiddleware.js    # JWT verification
-    │   │   └── upload.js            # Multer + Cloudinary setup
+    │   │   ├── chat.controller.js
+    │   │   ├── message.controller.js
+    │   │   └── user.controller.js
+    │   ├── Middlewares/
+    │   │   ├── authMiddleware.js
+    │   │   └── upload.js
     │   ├── routes/
-    │   │   ├── index.route.js       # Route aggregator
-    │   │   ├── user.route.js        # User endpoints
-    │   │   ├── chat.route.js        # Chat endpoints
-    │   │   └── message.route.js     # Message endpoints
+    │   │   ├── chat.route.js
+    │   │   ├── index.route.js
+    │   │   ├── message.route.js
+    │   │   └── user.route.js
     │   └── utils/
-    │       └── helpers.js           # Password hashing & JWT utilities
-    ├── prisma/
-    │   └── schema.prisma            # Data models (User, Chat, Message)
-    ├── prismaClient.js              # Prisma client instance
-    ├── app.js                       # Express app with Socket.IO server
+    │       ├── helpers.js
+    │       └── mailer.js
+    ├── prismaClient.js
+    ├── app.js
     └── package.json
 ```
 
@@ -103,16 +124,16 @@ chatApp/
 
 ## 🛠 Tech Stack
 
-| Layer      | Technologies                                                        |
-|------------|---------------------------------------------------------------------|
-| **Frontend** | React 19, React Router 7, Vite 7, Tailwind CSS 4, Axios             |
-| **Backend** | Node.js, Express 5, Prisma ORM, Socket.IO 4, MongoDB                |
-| **Database** | MongoDB (with Prisma for ORM)                                       |
-| **File Storage** | Cloudinary (image, video, audio, document hosting)                 |
-| **Authentication** | JWT (jsonwebtoken), bcryptjs (password hashing)                    |
-| **Real-Time** | Socket.IO (WebSocket protocol for instant communication)            |
-| **Development** | Vite, nodemon, ESLint                                               |
-| **Icons & UI** | React Icons, Lucide React                                           |
+| Layer           | Technologies                                                      |
+|-----------------|-------------------------------------------------------------------|
+| **Frontend**    | React 19, React Router 7, Vite 7, Tailwind CSS 4, Axios           |
+| **Backend**     | Node.js, Express 5, Prisma ORM, Socket.IO 4, MongoDB              |
+| **Database**    | MongoDB (with Prisma ORM)                                         |
+| **File Storage**| Cloudinary (media & docs hosting)                                 |
+| **Auth**        | JWT (jsonwebtoken), bcryptjs                                      |
+| **Real-Time**   | Socket.IO (WebSocket)                                             |
+| **Dev Tools**   | Vite, nodemon, ESLint                                             |
+| **UI/Icons**    | React Icons, Lucide React                                         |
 
 ---
 
@@ -154,7 +175,7 @@ VITE_SOCKET_URL=http://localhost:3001
 
 ---
 
-## � Quick Start Guide
+## 🚀 Quick Start Guide
 
 ### Prerequisites
 - Node.js 16+ and npm 8+
@@ -455,4 +476,4 @@ lsof -ti:3001 | xargs kill -9
 - Verify `VITE_SOCKET_URL` matches server address
 
 
-**Built with ❤️ using React + Node.js**
+**Built with ❤️ using React, Node.js, Express, Prisma, and Socket.IO**
