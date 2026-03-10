@@ -28,7 +28,7 @@ export default function EmptyChatState({ username }) {
       `}</style>
 
       <div className="animate-slide-up" style={{ animationDelay: "0.1s" }}>
-        <h1 className="text-4xl md:text-5xl font-bold bg-linear-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-3">
+        <h1 className="text-4xl md:text-4xl font-bold bg-linear-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-3">
           Welcome to ChatApp
         </h1>
       </div>

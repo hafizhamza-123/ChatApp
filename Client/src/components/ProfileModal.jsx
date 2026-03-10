@@ -111,7 +111,7 @@ export default function ProfileModal({ isOpen, onClose, user, onProfileUpdate })
       onClick={onClose}
     >
       <div
-        className="max-h-[80vh] w-full max-w-112.5 overflow-y-auto rounded-xl bg-white shadow-[0_10px_40px_rgba(0,0,0,0.15)]"
+        className="max-h-[80vh] w-full max-w-112.5 overflow-y-auto custom-scrollbar rounded-xl bg-white shadow-[0_10px_40px_rgba(0,0,0,0.15)] "
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between rounded-t-xl border-b border-[#f0f0f0] bg-[linear-gradient(135deg,#667eea_0%,#764ba2_100%)] px-6 py-6 text-white max-[480px]:px-4 max-[480px]:py-4">
