@@ -22,8 +22,8 @@ export default function ChatSidebar({
   getLastMessage,
 }) {
   return (
-    <aside className="w-80 bg-white border-r border-gray-200 flex flex-col shadow-xl">
-      <div className="p-6 border-b border-gray-200 bg-white">
+    <aside className="w-full md:w-80 bg-white border-r border-gray-200 flex flex-col shadow-xl h-full">
+      <div className="p-4 sm:p-5 md:p-6 border-b border-gray-200 bg-white">
         <div className="flex justify-between items-start gap-4">
           <div>
             <div className="text-2xl font-bold text-indigo-600">ChatApp</div>
@@ -78,7 +78,7 @@ export default function ChatSidebar({
                 setHoveredChatId(null);
                 setMenuOpenChatId(null);
               }}
-              className={`px-5 py-4 border-b border-gray-100 transition-all relative ${activeChat?.id === chat.id ? "bg-indigo-50" : "hover:bg-gray-50"}`}
+              className={`px-4 sm:px-5 py-4 border-b border-gray-100 transition-all relative ${activeChat?.id === chat.id ? "bg-indigo-50" : "hover:bg-gray-50"}`}
             >
               <div className="flex justify-between items-start">
                 <div className="flex items-center gap-3 cursor-pointer" onClick={() => openChat(chat)}>
@@ -94,7 +94,7 @@ export default function ChatSidebar({
 
                   <div>
                     <div className="font-semibold text-sm">{getChatName(chat)}</div>
-                    <div className="text-xs text-gray-500 truncate max-w-40 mt-1">
+                    <div className="text-xs text-gray-500 truncate max-w-36 sm:max-w-40 mt-1">
                       {getLastMessage(chat)}
                     </div>
                   </div>

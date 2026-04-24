@@ -393,6 +393,7 @@ export default function useChatController({ socket, user }) {
       setMenuOpenChatId,
       setSearch,
       setSelectedUsers,
+      setActiveChat,
       setShowGroupModal,
       setShowProfileModal,
       startDirectChat,

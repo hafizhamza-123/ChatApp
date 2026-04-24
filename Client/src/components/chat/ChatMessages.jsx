@@ -17,8 +17,8 @@ export default function ChatMessages({
           key={index}
           className={`px-3 py-2 rounded-2xl shadow ${
             msg.senderId === user.id
-              ? "ml-auto bg-indigo-600 text-white rounded-br-none max-w-xs"
-              : "mr-auto bg-white border border-gray-200 rounded-bl-none max-w-xs"
+              ? "ml-auto bg-indigo-600 text-white rounded-br-none max-w-[85%] sm:max-w-xs md:max-w-md"
+              : "mr-auto bg-white border border-gray-200 rounded-bl-none max-w-[85%] sm:max-w-xs md:max-w-md"
           }`}
         >
           {msg.fileType ? (

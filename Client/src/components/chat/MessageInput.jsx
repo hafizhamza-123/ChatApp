@@ -15,9 +15,9 @@ export default function MessageInput({
   if (!activeChat) return null;
 
   return (
-    <div className="px-8 py-4 bg-white border-t border-gray-200">
+    <div className="px-3 sm:px-6 md:px-8 py-3 sm:py-4 bg-white border-t border-gray-200">
       {filePreview && (
-        <div className="mb-3 p-3 bg-indigo-50 rounded-xl border border-indigo-200 flex items-center justify-between">
+        <div className="mb-3 p-3 bg-indigo-50 rounded-xl border border-indigo-200 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             {filePreview.type === "image" ? (
               <>
@@ -52,7 +52,7 @@ export default function MessageInput({
         </div>
       )}
 
-      <form onSubmit={sendMessage} className="flex gap-3 items-end">
+      <form onSubmit={sendMessage} className="flex gap-2 sm:gap-3 items-end">
         <input
           type="file"
           ref={fileInputRef}
@@ -65,30 +65,33 @@ export default function MessageInput({
           type="button"
           onClick={() => fileInputRef.current?.click()}
           disabled={uploadingFile}
-          className="p-3 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 transition cursor-pointer disabled:opacity-50"
+          className="p-2.5 sm:p-3 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 transition cursor-pointer disabled:opacity-50"
         >
-          <FiPaperclip size={20} />
+          <FiPaperclip size={18} />
         </button>
 
         <input
           value={text}
           onChange={handleTypingInput}
           placeholder="Type a message..."
-          className="flex-1 px-5 py-3 rounded-full border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none bg-gray-50"
+          className="flex-1 px-4 sm:px-5 py-2.5 sm:py-3 rounded-full border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none bg-gray-50 text-sm sm:text-base"
         />
 
         <button
           type="submit"
           disabled={uploadingFile || (!text.trim() && !selectedFile)}
-          className="px-6 py-3 rounded-full bg-indigo-600 text-white shadow hover:opacity-90 transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          className="px-4 sm:px-6 py-2.5 sm:py-3 rounded-full bg-indigo-600 text-white shadow hover:opacity-90 transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
         >
           {uploadingFile ? (
             <>
               <FiLoader className="animate-spin" size={18} />
-              Uploading...
+              <span className="hidden sm:inline">Uploading...</span>
             </>
           ) : (
-            <FiSend size={18} />
+            <>
+              <FiSend size={18} />
+              <span className="hidden sm:inline">Send</span>
+            </>
           )}
         </button>
       </form>
