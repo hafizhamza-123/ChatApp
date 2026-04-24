@@ -10,8 +10,8 @@ import {
   getMessagesWithReadStatus,
   getChatReadSummary
 } from "../controllers/message.controller.js";
-import { authenticate } from "../middlewares/authMiddleware.js";
-import upload from "../middlewares/upload.js";
+import { authenticate } from "../Middlewares/authMiddleware.js";
+import upload from "../Middlewares/upload.js";
 
 const router = Router();
 

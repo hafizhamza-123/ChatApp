@@ -1,7 +1,6 @@
-import { createContext, useState, useEffect, useContext } from "react";
+import { useState, useEffect } from "react";
 import API from "../api/axios";
-
-const AuthContext = createContext();
+import { AuthContext } from "./authContextObject";
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -77,7 +76,7 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       await API.post("/users/logout");
-    } catch (err) {
+    } catch {
       // Ignore errors, proceed with logout
     } finally {
       localStorage.removeItem("token");
@@ -102,5 +101,3 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
-
-export const useAuth = () => useContext(AuthContext);

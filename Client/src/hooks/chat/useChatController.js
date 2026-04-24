@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import { useAuth } from "../../context/AuthContext";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useAuth } from "../../context/useAuth";
 import API from "../../api/axios";
 import { getChatName, getOtherMember } from "../../components/chat/utils/chatHelpers";
 
@@ -29,15 +29,20 @@ export default function useChatController({ socket, user }) {
   const bottomRef = useRef(null);
   const fileInputRef = useRef(null);
   const { logout } = useAuth();
+  const emitSocket = useCallback((event, payload) => {
+    if (!socket || !socket.connected) return false;
+    socket.emit(event, payload);
+    return true;
+  }, [socket]);
 
   useEffect(() => {
-    if (!socket || !user) return;
+    if (!socket || !user || !socket.connected) return;
 
-    socket.emit("join_chat", {
+    emitSocket("join_chat", {
       username: user.username,
       userId: user.id,
     });
-  }, [socket, user]);
+  }, [socket, user, socket?.connected, emitSocket]);
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -138,7 +143,7 @@ export default function useChatController({ socket, user }) {
       setActiveChat(updatedChat);
       setTypingUser(null);
 
-      socket.emit("join_room", room);
+      emitSocket("join_room", room);
 
       const res = await API.get(`/chats/${chat.id}`);
       setMessages(res.data.data.messages);
@@ -166,7 +171,7 @@ export default function useChatController({ socket, user }) {
 
         const savedMessage = res.data.data;
 
-        socket.emit("send_message", {
+        const emitted = emitSocket("send_message", {
           senderId: user.id,
           text: savedMessage.fileName,
           fileUrl: savedMessage.fileUrl,
@@ -176,6 +181,10 @@ export default function useChatController({ socket, user }) {
           room: activeChat.room,
         });
 
+        if (!emitted) {
+          setMessages((prev) => [...prev, savedMessage]);
+        }
+
         setSelectedFile(null);
         setFilePreview(null);
         setUploadingFile(false);
@@ -184,15 +193,19 @@ export default function useChatController({ socket, user }) {
 
         const savedMessage = res.data.data;
 
-        socket.emit("send_message", {
+        const emitted = emitSocket("send_message", {
           senderId: user.id,
           text: savedMessage.content,
           timestamp: savedMessage.createdAt,
           room: activeChat.room,
         });
+
+        if (!emitted) {
+          setMessages((prev) => [...prev, savedMessage]);
+        }
       }
 
-      socket.emit("typing", {
+      emitSocket("typing", {
         room: activeChat.room,
         isTyping: false,
       });
@@ -209,7 +222,7 @@ export default function useChatController({ socket, user }) {
 
     if (!activeChat) return;
 
-    socket.emit("typing", {
+    emitSocket("typing", {
       room: activeChat.room,
       isTyping: true,
     });

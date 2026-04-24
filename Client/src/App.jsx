@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -6,7 +6,7 @@ import {
   Navigate,
 } from "react-router-dom";
 import { io } from "socket.io-client";
-import { useAuth } from "./context/AuthContext";
+import { useAuth } from "./context/useAuth";
 import Chat from "./components/Chat";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -15,7 +15,8 @@ import ResetPassword from "./pages/ResetPassword.jsx";
 import VerifyOtp from "./pages/VerifyOtp.jsx";
 
 const SOCKET_URL =
-  import.meta.env.VITE_SOCKET_URL || "http://localhost:3001";
+  import.meta.env.VITE_SOCKET_URL ||
+  (import.meta.env.DEV ? "http://localhost:3001" : "");
 
 export default function App() {
   return (
@@ -27,11 +28,11 @@ export default function App() {
 
 function AppRoutes() {
   const { user, loading } = useAuth();
-  const socketRef = useRef(null);
+  const [socketInstance, setSocketInstance] = useState(null);
   const [connected, setConnected] = useState(false);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || !SOCKET_URL) return;
 
     const token = localStorage.getItem("token");
     if (!token) return;
@@ -41,19 +42,20 @@ function AppRoutes() {
       auth: { token },
     });
 
-    socketRef.current = socket;
-
     socket.on("connect", () => {
       console.log("Socket connected");
+      setSocketInstance(socket);
       setConnected(true);
     });
 
     socket.on("disconnect", () => {
       setConnected(false);
+      setSocketInstance(null);
     });
 
     return () => {
       socket.disconnect();
+      setSocketInstance(null);
     };
   }, [user]);
 
@@ -89,7 +91,7 @@ function AppRoutes() {
         element={
           user ? (
             <Chat
-              socket={socketRef.current}
+              socket={socketInstance}
               user={user}
               connected={connected}
             />

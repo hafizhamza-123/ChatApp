@@ -9,7 +9,7 @@
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: #888; /* scrollbar handle color */
+  background-color: #434343; /* scrollbar handle color */
   border-radius: 4px; /* rounded corners */
   border: 2px solid #f0f0f0; /* optional padding */
 }

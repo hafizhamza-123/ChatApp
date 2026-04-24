@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { createDirectChat, createGroupChat, fetchUserChats, getChatById, deleteChat } from '../controllers/chat.controller.js';
-import { authenticate } from "../middlewares/authMiddleware.js";
+import { authenticate } from "../Middlewares/authMiddleware.js";
 
 const router = Router();
 

@@ -477,3 +477,41 @@ lsof -ti:3001 | xargs kill -9
 
 
 **Built with ❤️ using React, Node.js, Express, Prisma, and Socket.IO**
+
+---
+
+## Vercel Deployment (Updated)
+
+This repo is now structured for **two Vercel projects**:
+
+1. `Client` project (Vite static frontend)
+2. `Server` project (Node serverless API functions)
+
+### 1) Deploy `Server` on Vercel
+
+- In Vercel, create a new project and set **Root Directory** to `Server`.
+- The backend uses `api/index.js` as the Vercel function entrypoint.
+- Add environment variables:
+  - `DATABASE_URL`
+  - `JWT_SECRET`
+  - `JWT_REFRESH_SECRET`
+  - `RESET_PASSWORD_SECRET`
+  - `EMAIL_USER`
+  - `EMAIL_PASS`
+  - `CLOUDINARY_CLOUD_NAME`
+  - `CLOUDINARY_API_KEY`
+  - `CLOUDINARY_API_SECRET`
+  - `FRONTEND_URL` (your deployed Client URL)
+  - `CLIENT_URL` (same as frontend URL; supports comma-separated values)
+
+### 2) Deploy `Client` on Vercel
+
+- Create another Vercel project with **Root Directory** set to `Client`.
+- Add environment variables:
+  - `VITE_API_BASE_URL=https://<your-server-project>.vercel.app/api`
+  - `VITE_SOCKET_URL` (optional: only set if you host Socket.IO on a non-serverless runtime)
+
+### Important Socket.IO Note
+
+Vercel serverless functions are request/response and do not keep long-lived Socket.IO connections.
+This project now gracefully works without sockets on Vercel (REST chat flow still works), but for full real-time sockets you should host the Socket.IO server on a persistent runtime (e.g., Railway/Render/VM) and set `VITE_SOCKET_URL` to that URL.

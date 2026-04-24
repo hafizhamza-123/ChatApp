@@ -1,28 +1,33 @@
-import express from "express";
 import { createServer } from "http";
 import { Server } from "socket.io";
-import cors from "cors";
 import dotenv from "dotenv";
 import connectToDatabase from "./src/config/connectToDatabase.js";
-import centralRoutes from "./src/routes/index.route.js";
+import createApp from "./src/createApp.js";
+import validateEnv from "./src/config/validateEnv.js";
 
 dotenv.config();
+validateEnv();
 
-const PORT = process.env.PORT || 3001;
-const app = express();
+const PORT = process.env.PORT || 3000;
+const app = createApp();
 
 const activeUsers = new Map();
-
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use("/api", centralRoutes);
+const socketAllowedOrigins = [
+  process.env.CLIENT_URL,
+  process.env.FRONTEND_URL,
+]
+  .filter(Boolean)
+  .flatMap((value) => value.split(",").map((origin) => origin.trim()))
+  .filter(Boolean);
 
 const httpServer = createServer(app);
 
 const io = new Server(httpServer, {
   cors: {
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    origin:
+      socketAllowedOrigins.length > 0
+        ? socketAllowedOrigins
+        : ["http://localhost:5173"],
     methods: ["GET", "POST"],
     credentials: true,
   },
