@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../api/axios";
+import AuthLayout from "../components/auth/AuthLayout";
 
 export default function VerifyOtp() {
   const [email, setEmail] = useState("");
@@ -86,66 +87,12 @@ export default function VerifyOtp() {
   };
 
   return (
-    <div className="login-bg relative flex justify-center items-center min-h-screen font-inter overflow-hidden px-4">
-      <div className="login-orb login-orb-left" />
-      <div className="login-orb login-orb-right" />
-
-      <div className="bg-white/85 backdrop-blur-xl shadow-xl rounded-2xl p-8 sm:p-10 w-full max-w-md border border-indigo-100 relative z-10">
-        <p className="text-xs tracking-[0.2em] uppercase text-indigo-500 text-center mb-2">
-          ChatApp Secure Space
-        </p>
-        <h2 className="text-3xl font-bold mb-6 text-center text-indigo-600">
-          Verify OTP
-        </h2>
-
-        {message && (
-          <div
-            className={`mb-4 p-3 rounded-xl text-sm border ${
-              message.type === "success"
-                ? "bg-green-50 text-green-700 border-green-200"
-                : "bg-red-50 text-red-700 border-red-200"
-            }`}
-          >
-            {message.text}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <input
-            type="email"
-            placeholder="Email"
-            className="w-full px-5 py-3 rounded-2xl border border-gray-200 focus:ring-2 focus:ring-indigo-400 outline-none transition shadow-sm hover:shadow-md"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-
-          <div className="flex justify-between gap-2">
-            {otp.map((data, index) => (
-              <input
-                key={index}
-                type="text"
-                maxLength="1"
-                value={data}
-                ref={(el) => (inputsRef.current[index] = el)}
-                onChange={(e) => handleChange(e.target, index)}
-                onKeyDown={(e) => handleKeyDown(e, index)}
-                className="w-12 h-14 text-center text-xl font-semibold rounded-2xl border border-gray-200 focus:ring-2 focus:ring-indigo-400 outline-none shadow-sm hover:shadow-md transition"
-              />
-            ))}
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full px-5 py-3 rounded-2xl bg-linear-to-r from-indigo-600 to-violet-600 text-white font-medium shadow-md hover:opacity-90 transition disabled:opacity-50 cursor-pointer"
-          >
-            {loading ? "Verifying..." : "Verify OTP"}
-          </button>
-        </form>
-
-        <p className="mt-6 text-sm text-center text-gray-600">
-          Didn't receive the code?{" "}
+    <AuthLayout
+      title="Verify OTP"
+      subtitle="Enter the one-time passcode sent to your email address."
+      footer={
+        <>
+          Did not receive the code?{" "}
           <button
             onClick={handleResend}
             disabled={resendLoading}
@@ -153,8 +100,54 @@ export default function VerifyOtp() {
           >
             {resendLoading ? "Resending..." : "Resend OTP"}
           </button>
-        </p>
-      </div>
-    </div>
+        </>
+      }
+    >
+      {message && (
+        <div
+          className={`mb-4 p-3 rounded-xl text-sm border ${
+            message.type === "success"
+              ? "bg-green-50 text-green-700 border-green-200"
+              : "bg-red-50 text-red-700 border-red-200"
+          }`}
+        >
+          {message.text}
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <input
+          type="email"
+          placeholder="Email"
+          className="w-full px-5 py-3 rounded-2xl border border-gray-200 focus:ring-2 focus:ring-indigo-400 outline-none transition shadow-sm hover:shadow-md"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+
+        <div className="flex justify-between gap-2">
+          {otp.map((data, index) => (
+            <input
+              key={index}
+              type="text"
+              maxLength="1"
+              value={data}
+              ref={(el) => (inputsRef.current[index] = el)}
+              onChange={(e) => handleChange(e.target, index)}
+              onKeyDown={(e) => handleKeyDown(e, index)}
+              className="w-12 h-14 text-center text-xl font-semibold rounded-2xl border border-gray-200 focus:ring-2 focus:ring-indigo-400 outline-none shadow-sm hover:shadow-md transition"
+            />
+          ))}
+        </div>
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full px-5 py-3 rounded-2xl bg-linear-to-r from-indigo-600 to-violet-600 text-white font-medium shadow-md hover:opacity-90 transition disabled:opacity-50 cursor-pointer"
+        >
+          {loading ? "Verifying..." : "Verify OTP"}
+        </button>
+      </form>
+    </AuthLayout>
   );
 }

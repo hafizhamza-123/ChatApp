@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
+import AuthLayout from "../components/auth/AuthLayout";
 
 function Register() {
   const { register } = useAuth();
@@ -34,77 +35,67 @@ function Register() {
   };
 
   return (
-    <div className="login-bg relative flex justify-center items-center min-h-screen font-inter overflow-hidden px-4">
-      <div className="login-orb login-orb-left" />
-      <div className="login-orb login-orb-right" />
-      <div className="bg-white/85 backdrop-blur-xl shadow-xl rounded-2xl p-8 sm:p-10 w-full max-w-md border border-indigo-100 relative z-10">
-        <p className="text-xs tracking-[0.2em] uppercase text-indigo-500 text-center mb-2">
-          ChatApp Secure Space
-        </p>
-        <h2 className="text-3xl font-bold mb-6 text-center text-indigo-600">
-          Register
-        </h2>
-
-        {message && (
-          <div
-            className={`mb-4 p-3 rounded-xl text-sm border ${
-              message.type === "success"
-                ? "bg-green-50 text-green-700 border-green-200"
-                : "bg-red-50 text-red-700 border-red-200"
-            }`}
-          >
-            {message.text}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <input
-            type="email"
-            placeholder="Email"
-            className="w-full px-5 py-3 rounded-2xl border border-gray-200 focus:ring-2 focus:ring-indigo-400 outline-none transition shadow-sm hover:shadow-md"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-
-          <input
-            type="text"
-            placeholder="User Name"
-            className="w-full px-5 py-3 rounded-2xl border border-gray-200 focus:ring-2 focus:ring-indigo-400 outline-none transition shadow-sm hover:shadow-md"
-            value={username}
-            onChange={(e) => setUserName(e.target.value)}
-            required
-          />
-
-          <input
-            type="password"
-            placeholder="Password"
-            className="w-full px-5 py-3 rounded-2xl border border-gray-200 focus:ring-2 focus:ring-indigo-400 outline-none transition shadow-sm hover:shadow-md"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-
-          <button
-            type="submit"
-            className="w-full px-5 py-3 rounded-2xl bg-linear-to-r from-indigo-600 to-violet-600 text-white font-medium shadow-md hover:opacity-90 transition disabled:opacity-50 cursor-pointer"
-            disabled={loading}
-          >
-            {loading ? "Registering..." : "Register"}
-          </button>
-        </form>
-
-        <p className="mt-6 text-sm text-center text-gray-600">
+    <AuthLayout
+      title="Register"
+      subtitle="Create your workspace identity and start messaging instantly."
+      footer={
+        <>
           Already have an account?{" "}
-          <Link
-            to="/login"
-            className="text-indigo-600 font-medium hover:underline cursor-pointer"
-          >
+          <Link to="/login" className="text-indigo-600 font-medium hover:underline cursor-pointer">
             Login
           </Link>
-        </p>
-      </div>
-    </div>
+        </>
+      }
+    >
+      {message && (
+        <div
+          className={`mb-4 p-3 rounded-xl text-sm border ${
+            message.type === "success"
+              ? "bg-green-50 text-green-700 border-green-200"
+              : "bg-red-50 text-red-700 border-red-200"
+          }`}
+        >
+          {message.text}
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <input
+          type="email"
+          placeholder="Email"
+          className="w-full px-5 py-3 rounded-2xl border border-gray-200 focus:ring-2 focus:ring-indigo-400 outline-none transition shadow-sm hover:shadow-md"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+
+        <input
+          type="text"
+          placeholder="User Name"
+          className="w-full px-5 py-3 rounded-2xl border border-gray-200 focus:ring-2 focus:ring-indigo-400 outline-none transition shadow-sm hover:shadow-md"
+          value={username}
+          onChange={(e) => setUserName(e.target.value)}
+          required
+        />
+
+        <input
+          type="password"
+          placeholder="Password"
+          className="w-full px-5 py-3 rounded-2xl border border-gray-200 focus:ring-2 focus:ring-indigo-400 outline-none transition shadow-sm hover:shadow-md"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+
+        <button
+          type="submit"
+          className="w-full px-5 py-3 rounded-2xl bg-linear-to-r from-indigo-600 to-violet-600 text-white font-medium shadow-md hover:opacity-90 transition disabled:opacity-50 cursor-pointer"
+          disabled={loading}
+        >
+          {loading ? "Registering..." : "Register"}
+        </button>
+      </form>
+    </AuthLayout>
   );
 }
 
