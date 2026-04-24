@@ -23,3 +23,92 @@
   scrollbar-width: thin;
   scrollbar-color: #888 #f0f0f0;
 }
+
+.login-bg {
+  background:
+    radial-gradient(circle at 15% 25%, rgba(99, 102, 241, 0.25), transparent 35%),
+    radial-gradient(circle at 85% 75%, rgba(139, 92, 246, 0.22), transparent 35%),
+    linear-gradient(135deg, #eef2ff 0%, #f8fafc 45%, #f5f3ff 100%);
+}
+
+.login-orb {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(16px);
+  opacity: 0.45;
+  z-index: 0;
+}
+
+.login-orb-left {
+  width: 16rem;
+  height: 16rem;
+  background: #818cf8;
+  top: 6%;
+  left: 4%;
+}
+
+.login-orb-right {
+  width: 18rem;
+  height: 18rem;
+  background: #a78bfa;
+  right: 6%;
+  bottom: 6%;
+}
+
+.chat-doodle {
+  position: absolute;
+  z-index: 1;
+  width: 15rem;
+  display: grid;
+  gap: 0.8rem;
+}
+
+.chat-doodle-left {
+  left: 6%;
+  top: 18%;
+  animation: floaty 7s ease-in-out infinite;
+}
+
+.chat-doodle-right {
+  right: 6%;
+  bottom: 16%;
+  animation: floaty 8s ease-in-out infinite reverse;
+}
+
+.chat-bubble-card {
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(129, 140, 248, 0.25);
+  border-radius: 1rem;
+  padding: 0.8rem 0.9rem;
+  box-shadow: 0 8px 24px rgba(79, 70, 229, 0.1);
+}
+
+.chat-bubble-card-reply {
+  transform: translateX(1.4rem);
+}
+
+.chat-bubble-name {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #4f46e5;
+  margin: 0;
+}
+
+.chat-bubble-text {
+  font-size: 0.9rem;
+  color: #334155;
+  margin: 0.2rem 0 0;
+}
+
+@keyframes floaty {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}

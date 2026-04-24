@@ -45,10 +45,14 @@ export default function ResetPassword() {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-linear-to-br from-indigo-50 via-white to-violet-50 font-inter px-4">
-      
-      <div className="bg-white/80 backdrop-blur-xl shadow-lg rounded-2xl p-10 w-full max-w-md border border-gray-200">
-        
+    <div className="login-bg relative flex justify-center items-center min-h-screen font-inter overflow-hidden px-4">
+      <div className="login-orb login-orb-left" />
+      <div className="login-orb login-orb-right" />
+
+      <div className="bg-white/85 backdrop-blur-xl shadow-xl rounded-2xl p-8 sm:p-10 w-full max-w-md border border-indigo-100 relative z-10">
+        <p className="text-xs tracking-[0.2em] uppercase text-indigo-500 text-center mb-2">
+          ChatApp Secure Space
+        </p>
         <h2 className="text-3xl font-bold mb-2 text-center text-indigo-600">
           Reset Password
         </h2>
@@ -70,8 +74,6 @@ export default function ResetPassword() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
-
-          {/* New Password */}
           <div className="relative">
             <FiLock className="absolute left-4 top-4 text-gray-400" />
             <input
@@ -84,7 +86,6 @@ export default function ResetPassword() {
             />
           </div>
 
-          {/* Confirm Password */}
           <div className="relative">
             <FiLock className="absolute left-4 top-4 text-gray-400" />
             <input

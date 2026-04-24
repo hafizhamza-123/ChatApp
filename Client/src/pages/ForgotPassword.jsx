@@ -33,16 +33,20 @@ export default function ForgotPassword() {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-linear-to-br from-indigo-50 via-white to-violet-50 font-inter px-4">
-      
-      <div className="bg-white/80 backdrop-blur-xl shadow-lg rounded-2xl p-10 w-full max-w-md border border-gray-200">
-        
+    <div className="login-bg relative flex justify-center items-center min-h-screen font-inter overflow-hidden px-4">
+      <div className="login-orb login-orb-left" />
+      <div className="login-orb login-orb-right" />
+
+      <div className="bg-white/85 backdrop-blur-xl shadow-xl rounded-2xl p-8 sm:p-10 w-full max-w-md border border-indigo-100 relative z-10">
+        <p className="text-xs tracking-[0.2em] uppercase text-indigo-500 text-center mb-2">
+          ChatApp Secure Space
+        </p>
         <h2 className="text-3xl font-bold mb-2 text-center text-indigo-600">
           Forgot Password
         </h2>
 
         <p className="text-sm text-center text-gray-500 mb-6">
-          Enter your email and we’ll send you a reset link.
+          Enter your email and we'll send you a reset link.
         </p>
 
         {message && (
@@ -58,8 +62,6 @@ export default function ForgotPassword() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          
-          {/* Email Input with Icon */}
           <div className="relative">
             <FiMail className="absolute left-4 top-4 text-gray-400" />
             <input

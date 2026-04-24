@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { useNavigate} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import API from "../api/axios";
 
 export default function VerifyOtp() {
@@ -11,6 +11,7 @@ export default function VerifyOtp() {
 
   const inputsRef = useRef([]);
   const navigate = useNavigate();
+
   const handleChange = (element, index) => {
     if (isNaN(element.value)) return;
 
@@ -85,8 +86,14 @@ export default function VerifyOtp() {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-linear-to-br from-indigo-50 via-white to-violet-50 font-inter">
-      <div className="bg-white/80 backdrop-blur-xl shadow-lg rounded-2xl p-10 w-full max-w-md border border-gray-200">
+    <div className="login-bg relative flex justify-center items-center min-h-screen font-inter overflow-hidden px-4">
+      <div className="login-orb login-orb-left" />
+      <div className="login-orb login-orb-right" />
+
+      <div className="bg-white/85 backdrop-blur-xl shadow-xl rounded-2xl p-8 sm:p-10 w-full max-w-md border border-indigo-100 relative z-10">
+        <p className="text-xs tracking-[0.2em] uppercase text-indigo-500 text-center mb-2">
+          ChatApp Secure Space
+        </p>
         <h2 className="text-3xl font-bold mb-6 text-center text-indigo-600">
           Verify OTP
         </h2>
@@ -104,7 +111,6 @@ export default function VerifyOtp() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Email Input */}
           <input
             type="email"
             placeholder="Email"
@@ -114,7 +120,6 @@ export default function VerifyOtp() {
             required
           />
 
-          {/* OTP Boxes */}
           <div className="flex justify-between gap-2">
             {otp.map((data, index) => (
               <input
@@ -130,7 +135,6 @@ export default function VerifyOtp() {
             ))}
           </div>
 
-          {/* Verify Button */}
           <button
             type="submit"
             disabled={loading}
@@ -140,9 +144,8 @@ export default function VerifyOtp() {
           </button>
         </form>
 
-        {/* Resend */}
         <p className="mt-6 text-sm text-center text-gray-600">
-          Didn’t receive the code?{" "}
+          Didn't receive the code?{" "}
           <button
             onClick={handleResend}
             disabled={resendLoading}
