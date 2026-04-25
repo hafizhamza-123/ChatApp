@@ -12,21 +12,21 @@ export default function GroupModal({
   if (!showGroupModal) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-      <div className="bg-white w-105 rounded-2xl shadow-2xl p-6">
-        <h2 className="text-lg font-semibold text-gray-800 mb-4">Create New Group</h2>
+    <div className="fixed inset-0 bg-black/45 flex items-center justify-center z-50 p-4">
+      <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl p-5 sm:p-6 max-h-[85vh] overflow-y-auto">
+        <h2 className="text-lg font-semibold text-slate-800 mb-4">Create New Group</h2>
 
         <input
           type="text"
           placeholder="Enter group name"
           value={groupName}
           onChange={(e) => setGroupName(e.target.value)}
-          className="w-full px-4 py-2 mb-4 rounded-xl border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none"
+          className="w-full px-4 py-2.5 mb-4 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 outline-none"
         />
 
-        <div className="max-h-52 overflow-y-auto border border-gray-200 rounded-xl p-3 space-y-2 bg-gray-50">
+        <div className="max-h-56 overflow-y-auto custom-scrollbar border border-slate-200 rounded-xl p-3 space-y-2 bg-slate-50">
           {allUsers.map((u) => (
-            <label key={u.id} className="flex items-center gap-3 cursor-pointer text-sm">
+            <label key={u.id} className="flex items-center gap-3 cursor-pointer text-sm text-slate-700">
               <input
                 type="checkbox"
                 checked={selectedUsers.includes(u.id)}
@@ -50,14 +50,14 @@ export default function GroupModal({
               setShowGroupModal(false);
               setGroupNameAndUsers();
             }}
-            className="px-4 py-2 rounded-xl border border-gray-300 text-sm hover:bg-gray-100 cursor-pointer"
+            className="px-4 py-2.5 rounded-xl border border-slate-300 text-sm hover:bg-slate-100 cursor-pointer"
           >
             Cancel
           </button>
 
           <button
             onClick={createGroup}
-            className="px-5 py-2 rounded-xl bg-indigo-600 text-white text-sm shadow hover:opacity-90 cursor-pointer"
+            className="px-5 py-2.5 rounded-xl bg-indigo-600 text-white text-sm shadow hover:opacity-90 cursor-pointer"
           >
             Create Group
           </button>
